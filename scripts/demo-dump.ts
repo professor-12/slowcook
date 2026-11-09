@@ -1,0 +1,98 @@
+// REAL testnet: scripted sell-off after a launch, then the Floor Keeper.
+//  1. creator unlock attempt -> E_LOCKED
+//  2. holders dump tokens into the pool (ft_transfer_call -> ft_on_transfer)
+//  3. keeper pokes k_obs intervals -> defend() buys back and burns (<= r% of treasury)
+//  4. k_obs more pokes -> defend() again -> E_EPOCH_CAP (same epoch)
+//  5. a buyer restores the price; h_obs pokes at/above clearing -> unlock_creator succeeds
+// Usage: pnpm demo:dump <launch_id>
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { KEYS_DIR, account, call, events, fmtNear, need, sleep, view, writeResult, type TxResult } from "./lib.ts";
+
+const FACTORY = need("SLOWCOOK_FACTORY");
+const CREATOR = need("SLOWCOOK_CREATOR");
+const FUNDER = need("SLOWCOOK_FUNDER");
+const launchId = process.argv[2] ?? (await view<any[]>(FACTORY, "list_launches", { from: "0", limit: 100 })).at(-1)?.id;
+if (!launchId) throw new Error("usage: pnpm demo:dump <launch_id>");
+
+const steps: any[] = [];
+function record(step: string, r: TxResult, extra: Record<string, unknown> = {}) {
+  steps.push({ step, ok: r.ok, tx: r.url, error: r.ok ? undefined : r.error, ...extra });
+  console.log(`${r.ok ? "✔" : "✘"} ${step}${r.ok ? "" : `  -> ${(r.error ?? "").match(/E_[A-Z_]+/)?.[0] ?? r.error}`}\n    ${r.url}`);
+}
+const launch = await view(FACTORY, "get_launch", { id: launchId });
+if (launch.phase !== "Trading") throw new Error(`launch ${launchId} is ${launch.phase}, not Trading`);
+const token = launch.token_id as string;
+const keeper = account(FUNDER);
+const k = launch.params.k_obs as number;
+const h = launch.params.h_obs as number;
+const pokeMs = Number(launch.params.poke_interval_ms);
+const clearing = BigInt(launch.clearing_price);
+
+const treasury = async () => view(FACTORY, "get_treasury", { launch_id: launchId });
+const spot = async () => BigInt((await view(FACTORY, "get_pool", { launch_id: launchId })).spot_price);
+async function pokeN(n: number, label: string) {
+  for (let i = 0; i < n; i++) {
+    await sleep(pokeMs + 1500);
+    const r = await call(keeper, FACTORY, "poke", { launch_id: launchId }, { tgas: 30 });
+    const ev = events(r).find((e) => e.event === "poked")?.data?.[0];
+    record(`poke ${i + 1}/${n} (${label})`, r, ev ? { twap: ev.twap, floor: ev.floor, below_streak: ev.below_streak, above_streak: ev.above_streak } : {});
+    if (ev) console.log(`    twap ${ev.twap} vs floor ${ev.floor} | below ${ev.below_streak} above ${ev.above_streak}`);
+  }
+}
+
+console.log(`launch ${launchId} token ${token}; clearing ${clearing} yocto/token, spot ${await spot()}`);
+
+console.log("\n== 1. creator tries to unlock right away");
+record("unlock_creator (expect E_LOCKED)", await call(account(CREATOR), FACTORY, "unlock_creator", { launch_id: launchId }, { tgas: 100 }));
+
+console.log("\n== 2. holders dump");
+const receipts: any[] = JSON.parse(readFileSync(join(KEYS_DIR, `receipts-launch-${launchId}.json`), "utf8"));
+await call(keeper, FACTORY, "poke", { launch_id: launchId }, { tgas: 30 }).then((r) => record("poke (close the at-clearing interval)", r));
+let dumped = 0n;
+for (const b of receipts.slice(0, 6)) {
+  const bal = BigInt(await view(token, "ft_balance_of", { account_id: b.id }));
+  if (bal === 0n) continue;
+  const r = await call(account(b.id), token, "ft_transfer_call", { receiver_id: FACTORY, amount: bal.toString(), msg: JSON.stringify({ launch_id: launchId }) }, { deposit: 1n, tgas: 100 });
+  record(`dump ${b.id} sells ${bal / 10n ** 18n} tokens`, r);
+  if (r.ok) dumped += bal;
+}
+const t0 = await treasury();
+console.log(`   spot ${t0.spot_price} vs floor ${t0.floor_price} (clearing ${t0.clearing_price}); treasury ${fmtNear(t0.treasury.near_balance)} NEAR`);
+
+console.log(`\n== 3. keeper pokes ${k} intervals, then defend()`);
+record("defend before trigger (expect E_TRIGGER)", await call(keeper, FACTORY, "defend", { launch_id: launchId }, { tgas: 100 }));
+await pokeN(k, "after dump");
+const supplyBefore = BigInt(await view(token, "ft_total_supply"));
+const d1 = await call(keeper, FACTORY, "defend", { launch_id: launchId }, { tgas: 150 });
+const dev = events(d1).find((e) => e.event === "defended")?.data?.[0];
+record("defend #1", d1, dev ?? {});
+const supplyAfter = BigInt(await view(token, "ft_total_supply"));
+if (dev) console.log(`    spent ${fmtNear(dev.spent)} NEAR, bought & burned ${BigInt(dev.burned) / 10n ** 18n} tokens; spot ${dev.spot_before} -> ${dev.spot_after}; supply ${supplyBefore / 10n ** 18n} -> ${supplyAfter / 10n ** 18n}`);
+
+console.log(`\n== 4. same epoch: ${k} more pokes, defend again`);
+await pokeN(k, "same epoch");
+const d2 = await call(keeper, FACTORY, "defend", { launch_id: launchId }, { tgas: 150 });
+record("defend #2 in same epoch (expect E_EPOCH_CAP)", d2);
+
+console.log("\n== 5. price recovers; creator unlock after it holds");
+const buy = await call(keeper, FACTORY, "swap_near_for_token", { launch_id: launchId, min_out: "0" }, { deposit: 2n * 10n ** 24n, tgas: 100 });
+record("buyer swaps 2 NEAR for tokens", buy);
+console.log(`    spot now ${await spot()} (clearing ${clearing})`);
+await pokeN(h + 1, "recovery");
+const un = await call(account(CREATOR), FACTORY, "unlock_creator", { launch_id: launchId }, { tgas: 150 });
+record("unlock_creator after price held", un);
+const creatorBal = BigInt(await view(token, "ft_balance_of", { account_id: CREATOR }));
+console.log(`    creator token balance: ${creatorBal / 10n ** 18n}`);
+
+const t1 = await treasury();
+const solvency = await view(FACTORY, "get_solvency");
+const path = writeResult(`dump-${launchId}`, {
+  label: "REAL testnet run (test NEAR, no real value)",
+  factory: FACTORY, launch_id: launchId, token, clearing_price: clearing, tokens_dumped: dumped,
+  treasury_before: t0.treasury.near_balance, treasury_after: t1.treasury.near_balance,
+  defend_1: dev ?? null, supply_before_defend: supplyBefore, supply_after_defend: supplyAfter,
+  defend_2_error: d2.ok ? null : (d2.error ?? "").match(/E_[A-Z_]+/)?.[0],
+  creator_unlocked: un.ok, creator_balance: creatorBal, solvency, steps,
+});
+console.log(`\nwrote ${path}`);

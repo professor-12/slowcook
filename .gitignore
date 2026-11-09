@@ -1,0 +1,16 @@
+target/
+node_modules/
+.next/
+.env
+.env.local
+*.log
+results/tmp/
+.DS_Store
+neardev/
+sim/fixtures/parity.json
+sim/out/runs.csv
+.demo-keys/
+apps/web/out/
+*.tsbuildinfo
+apps/web/public/sim-summary.json
+apps/web/public/sim-chart.svg

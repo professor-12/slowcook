@@ -1,0 +1,21 @@
+{
+  "name": "slowcook",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build:contracts": "bash scripts/build-contracts.sh",
+    "test": "bash scripts/test-all.sh",
+    "test:sandbox": "cargo test -p slowcook-integration-tests -- --nocapture --test-threads 1",
+    "sim": "node sim/src/run.ts --seeds 1000",
+    "parity": "node sim/src/parity.ts --cases 1000",
+    "deploy:testnet": "bash scripts/deploy-testnet.sh",
+    "demo:launch": "node scripts/demo-launch.ts",
+    "demo:dump": "node scripts/demo-dump.ts",
+    "dev:web": "pnpm -C apps/web dev",
+    "build:web": "pnpm -C apps/web build"
+  },
+  "packageManager": "pnpm@12.8.1"
+}

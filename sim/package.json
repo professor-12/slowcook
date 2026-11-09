@@ -1,0 +1,11 @@
+{
+  "name": "@slowcook/sim",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sim": "node src/run.ts --seeds 1000",
+    "parity": "node src/parity.ts --cases 1000",
+    "test": "node --test test/*.test.ts",
+    "typecheck": "tsc --noEmit -p ."
+  }
+}

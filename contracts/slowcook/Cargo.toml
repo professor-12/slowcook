@@ -1,0 +1,26 @@
+[package]
+name = "slowcook"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "SlowCook: sealed-bid uniform-price memecoin launches with burn, pool and a rule-bound Floor Keeper treasury."
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+near-sdk.workspace = true
+uint.workspace = true
+hex.workspace = true
+
+[dev-dependencies]
+near-sdk = { workspace = true, features = ["unit-testing"] }
+proptest.workspace = true
+serde_json = "1"
+
+[package.metadata.near.reproducible_build]
+image = "sourcescan/cargo-near:0.22.0-rust-1.97.0"
+image_digest = "sha256:REPLACE_ME"
+passed_env = []
+container_build_command = ["cargo", "near", "build", "non-reproducible-wasm", "--locked"]

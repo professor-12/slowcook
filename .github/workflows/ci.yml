@@ -1,0 +1,49 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.97.0"
+          targets: wasm32-unknown-unknown
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install cargo-near 0.22.0
+        run: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/near/cargo-near/releases/download/cargo-near-v0.22.0/cargo-near-installer.sh | sh
+      - name: fmt
+        run: cargo fmt --all -- --check
+      - name: clippy
+        run: cargo clippy -p slowcook -p slowcook-token --tests -- -D warnings
+      - name: Parity fixtures (TS model)
+        run: node sim/src/parity.ts --cases 1000
+      - name: Unit, property (1000 cases) and parity tests
+        run: PROPTEST_CASES=1000 cargo test -p slowcook -p slowcook-token
+      - name: Build wasm
+        run: bash scripts/build-contracts.sh
+      - name: Sandbox integration tests
+        run: cargo test -p slowcook-integration-tests -- --nocapture --test-threads 1
+
+  web-and-sim:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: pnpm install --frozen-lockfile
+      - name: Simulator tests
+        run: node --test sim/test/*.test.ts
+      - name: Simulator smoke run (SIMULATED)
+        run: node sim/src/run.ts --seeds 200
+      - name: Web typecheck + build
+        run: pnpm -C apps/web typecheck && pnpm -C apps/web build
