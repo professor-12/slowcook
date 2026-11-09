@@ -16,10 +16,10 @@
 | 6 | Property tests (I1–I3, I6) | done | `proptests.rs` |
 | 7 | TS model + parity (1000 pure-math cases, 100 full-flow cases) | done | `parity_tests.rs` |
 | 8 | Simulator, 1000 seeds | done | `sim/README.md`, `results/sim-*-SIMULATED.*` |
-| 9 | Sandbox integration tests (real wasm) | in progress | `contracts/integration-tests/tests/sandbox.rs` |
-| 10 | Testnet deploy + demo:launch + demo:dump | pending | `results/*.json` |
-| 11 | Web app (Next.js static export + near-connect) | built, typechecked | `apps/web` |
-| 12 | README, docs, submission package | pending | |
+| 9 | Sandbox integration tests (real wasm) | done: 4/4 pass | `verification/test-report.md` §2 |
+| 10 | Testnet deploy + demo:launch + demo:dump | done | `results/*.json`, test report §3 |
+| 11 | Web app (Next.js static export + near-connect) | built + smoke-tested; wallet flow NOT browser-tested | `apps/web`, test report §6 |
+| 12 | README, docs, submission package | done (human fields pending) | `README.md`, `submission/` |
 | 13 | Hosting (Vercel), video, X post, form submission | **needs human** | `submission/` |
 
 ## Cut order (from the brief)
@@ -29,3 +29,16 @@
 4. Swap UI polish
 
 Nothing has been cut so far. 1Click is not started, because there is no testnet for Intents.
+
+## Status at 2026-11-09 ~17:45 UTC
+
+About 126 hours remain to the deadline.
+
+**Next actions, in order**
+1. **Human:** create the public repo, push, and fill the `REPLACE_ME` repo URLs (`Cargo.toml`, `apps/web/app/layout.tsx`).
+2. **Human:** host `apps/web/out` (Vercel or any static host) and click through with a testnet wallet. This step is unverified.
+3. **Human:** record the video (`submission/demo-script.md`), post on X, and fill `submission/submission.json`.
+4. **Optional, agent:**
+   - a second live launch with deeper liquidity, using a fresh faucet account;
+   - a poke-bounty keeper;
+   - the fresh-clone test on a clean machine.
