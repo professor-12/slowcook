@@ -30,7 +30,7 @@ Draft JSON: [`submission.json`](submission.json). `requestId` is generated once;
 - [ ] Record the ~2 min demo video (`demo-script.md`).
 - [ ] Post on X (`x-post.md`); put the post URL in `demoUrl`.
 - [ ] Fill `leadName`, `email`, `size`, `nearAddress` (mainnet payout), `projectUrl`, `demoUrl`; set `consent: true`.
-- [ ] Fresh-clone test on a clean machine (`git clone` → README steps).
+- [x] Fresh-clone test with a shared build cache (test report §7). Optional: repeat on a truly clean machine.
 - [ ] Say "yes" so the agent can submit, or submit through the form at https://nearhackathon.com/#apply.
 
 ## Submit command (run only after the human's explicit "yes")

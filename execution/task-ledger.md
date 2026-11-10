@@ -41,4 +41,4 @@ About 126 hours remain to the deadline.
 4. **Optional, agent:**
    - a second live launch with deeper liquidity, using a fresh faucet account;
    - a poke-bounty keeper;
-   - the fresh-clone test on a clean machine.
+   - the fresh-clone test on a truly clean machine (a fresh-clone test with a shared build cache passed on 2026-11-10; see test report §7).

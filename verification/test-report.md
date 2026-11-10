@@ -147,3 +147,27 @@ test result: ok. 4 passed; 0 failed; ... finished in 161.58s
 - **Build:** `pnpm -C apps/web build` (Next 16.4.5, static export) produced 5 routes (`/`, `/create`, `/launch`, `/why`, `/_not-found`) in a 980 KB `out/`.
 - **Smoke test:** served `out/` with `python3 -m http.server`. `/`, `/why/`, `/create/`, `/launch/?id=0`, `/sim-summary.json` and `/sim-chart.svg` all returned HTTP 200. The home HTML contains the hero text, and the JS bundle contains the factory ID.
 - **Not tested:** wallet connection and signing in a real browser. This machine has no browser. The read path uses the same `query/call_function` JSON-RPC shape that was checked with curl against the live factory. **Unverified until someone clicks through with a testnet wallet.**
+
+## 7. Fresh-clone test (2026-11-10)
+
+**Method.**
+- `git clone` of commit `464107b` into a new directory, then the README steps: `pnpm install` → `pnpm build:contracts` → `pnpm test` → `pnpm sim` → `pnpm -C apps/web build`.
+- It is **not a clean machine**: the toolchain, the pnpm store and the Cargo build cache (`CARGO_TARGET_DIR` pointed at the main checkout's `target/`) were shared, to avoid about 6 GB of duplicate build artifacts.
+- What it proves: the *committed files* plus the README commands are enough. Nothing depends on git-ignored local files.
+
+**Results.**
+- `pnpm install`: 95 packages, OK.
+- `pnpm test`:
+  - **ALL CONTRACT TESTS PASSED**: 54 + 4 tests, `PROPTEST_CASES=1000`, 243.6 s;
+  - simulator tests passed;
+  - 1000 parity fixtures generated.
+- `pnpm sim`: same table as before (insider share 40.3% vs 10.7%).
+- Web build: 5 static routes.
+- **Bug found and fixed:** `pnpm build:contracts` failed (exit 2) when `CARGO_TARGET_DIR` is set, because the wasm went to that directory while the scripts and sandbox tests read `<repo>/target/near`.
+  - Fixed in commit `8e985c7`: `build-contracts.sh` now passes `--out-dir <repo>/target/near/<crate>`.
+  - Re-run in the clone: exit 0. The clone's wasm is **byte-identical** to the main checkout's: sha256 `793252aa…` for the factory, `440d1fb0…` for the token.
+- **Deployed code matches the repo:** the base58 sha256 of the factory wasm, `9A6qZZvajAXpEfa7UCrzNuZ1HF1ushD8wb7TdCSiSsEy`, equals `slowcook-0dd752.testnet`'s on-chain `code_hash` (RPC `view_account`, 2026-11-10).
+
+**Not covered in the fresh clone:**
+- `pnpm test:sandbox`: it passed in the main checkout on 2026-11-09 (§2) and is heavy to re-run;
+- the testnet scripts, which need keys.
