@@ -129,6 +129,53 @@ test result: ok. 4 passed; 0 failed; ... finished in 161.58s
 - **Who called.** All wallets, the keeper and the buyer were controlled by the script.
 - **Pool depth.** About 0.7 NEAR of liquidity is tiny, so price moves are exaggerated.
 
+### Launch 1, deep pool: `results/launch-1-2026-11-12T07-16-28-408Z.json` (2026-11-12)
+
+**Command:**
+```bash
+DEMO_BUDGET_NEAR=1.3 DEMO_TICKS=6,7,8 DEMO_OVERDEPOSIT_PCT=10 DEMO_MIN_POOL_NEAR=5 DEMO_SYMBOL=DEEP DEMO_NAME="SlowCook Deep Pool" pnpm demo:launch
+```
+
+**Funding.** About 28 testnet NEAR in total: two new faucet accounts (`sc-fund1-c288b5`, `sc-fund2-cc12fd`) transferred 9.95 NEAR each to the funder, and 5 NEAR came from the creator account.
+
+**Prediction before launch.** `--plan-only` used the TS model to pick the highest `p_min` (on a 2% grid) at which the sale is still oversubscribed.
+- `p_min` = 8,441,866,397,879,956,656 yocto.
+- Predicted: clearing 19,526,549,953,584,173,415 yocto/token (tick 6), 600,000 filled, pool **5.8580 NEAR**.
+
+**On-chain result.**
+- **Matches the prediction exactly** on clearing price, amount filled and pool NEAR: `onchain_matches_prediction: {clearing_price: true, filled: true, pool_near: true}`.
+- Burned 0. The pool opened at exactly the clearing price, with 5.858 NEAR + 300,000 tokens. Treasury 5.9295 NEAR, including a 0.0715 NEAR penalty.
+- Finalize: [so2LEkqW…](https://testnet.nearblocks.io/txns/so2LEkqWAMjBxJwyFYuXQsUjLtAEFppxfqgKLVyCKCT), verified via RPC `tx`: `SuccessValue`.
+- **Uniform price.** `every_winner_paid_clearing_price: true`. The sniper (tick 20, about 7× clearing) paid 0.1837 NEAR for 9,409 tokens.
+- **Pro rata at the margin.** The four tick-6 bids each got 66,473 of the 66,576 tokens they asked for.
+
+**Incident: two clients ran at once (no on-chain harm).**
+- The original run logged an RPC `ETIMEDOUT` but kept running. My log-watcher matched the word "Error" and treated it as a crash, so I started `--resume 1`. Both clients then revealed.
+- Wallet b2's reveal landed via the resume run ([FBeJDUsR…](https://testnet.nearblocks.io/txns/FBeJDUsRXu79Umc3T9bxEM3LfbFBuzhti6D6TrMar4U1)).
+- **Every duplicate reveal was rejected `E_DUP`.** Example: [N48P2E1F…](https://testnet.nearblocks.io/txns/N48P2E1FTyRLTt1bdpnMgnAmeUL8vrd7YAKYW7xURr9). This is invariant I6 holding on testnet.
+- I stopped the resume run before finalize; finalize and all claims came from the original run.
+- Fixes: `--resume` now handles the reveal phase, and the retry filter in `scripts/lib.ts` now also treats near-api-js's `Exceeded N providers` failover error as a network error.
+
+### Dump and defend on launch 1: `results/dump-1-2026-11-12T07-21-36-824Z.json`
+
+1. **Creator unlock right after launch:** `E_LOCKED` ([3AUwtZ8v…](https://testnet.nearblocks.io/txns/3AUwtZ8vChDJ4KTr1H9Q7zC4DsU5D4Zb63atzPZw3xJN)).
+2. **The dump.** Six holders sold 308,480 tokens; spot fell from 1.953e19 to 4.756e18 (24% of clearing). `defend` before the trigger: `E_TRIGGER` ([DtdN6JUA…](https://testnet.nearblocks.io/txns/DtdN6JUAgpW8p47AqbgArCrNL283DeKHDEkZ6k3q5fiG)).
+3. **Trigger and buyback.** Three interval TWAPs: 9.33e18, then 4.76e18 and 4.76e18.
+   - **`defend` #1** spent **0.5929 NEAR**, which is 10.0% of the 5.9295 NEAR treasury, i.e. the cap.
+   - It bought and **burned 103,215 tokens**: supply 1,000,000 → 896,784. Spot rose to 6.90e18 and stayed below clearing.
+   - Transaction: [CaWtxdoq…](https://testnet.nearblocks.io/txns/CaWtxdoqnjjLRqHXHSYJpwQvEPxHNv8f2BWU8pRLXLmh). RPC: `SuccessValue`.
+4. **Epoch cap.** Three more pokes, then **`defend` #2 → `E_EPOCH_CAP`** ([D3KCfRbk…](https://testnet.nearblocks.io/txns/D3KCfRbkMJECbjdWqwa4Bjk5fzdXGKwsk4xFDuqYjPcX)). RPC: `Failure`, "E_EPOCH_CAP: epoch budget spent".
+5. **Recovery and creator unlock.**
+   - The script now sizes the recovery buy from the pool reserves, targeting 1.10× clearing. It bought **2.6914 NEAR** worth, and spot reached 2.164e19 (1.108× clearing).
+   - After 6 intervals at or above clearing, **`unlock_creator`** succeeded and the creator holds 100,000 tokens ([FnVVh9KX…](https://testnet.nearblocks.io/txns/FnVVh9KXAxgDzSw553H9wQTdP15eQjTTMFT7nWY7za6H)). RPC: `SuccessValue`.
+
+**What launch 1 adds over launch 0.**
+- A 5.86 NEAR pool instead of 0.7 NEAR.
+- An on-chain result predicted exactly in advance.
+- A realistic recovery: 2.69 NEAR lifts the price to 1.11× clearing, where on launch 0 a 2 NEAR buy overshot to about 11×.
+
+**Same limits as launch 0:** script-controlled wallets, and a single run.
+
 ## 4. Simulator (SIMULATED)
 
 - **Tests:** `node --test sim/test/*.test.ts` → 8 pass, 0 fail.
@@ -144,9 +191,29 @@ test result: ok. 4 passed; 0 failed; ... finished in 161.58s
 
 ## 6. Web app
 
-- **Build:** `pnpm -C apps/web build` (Next 16.4.5, static export) produced 5 routes (`/`, `/create`, `/launch`, `/why`, `/_not-found`) in a 980 KB `out/`.
-- **Smoke test:** served `out/` with `python3 -m http.server`. `/`, `/why/`, `/create/`, `/launch/?id=0`, `/sim-summary.json` and `/sim-chart.svg` all returned HTTP 200. The home HTML contains the hero text, and the JS bundle contains the factory ID.
-- **Not tested:** wallet connection and signing in a real browser. This machine has no browser. The read path uses the same `query/call_function` JSON-RPC shape that was checked with curl against the live factory. **Unverified until someone clicks through with a testnet wallet.**
+- **Build:** `pnpm -C apps/web build` (Next 16.4.5, static export) produces 5 routes: `/`, `/create`, `/launch`, `/why`, `/_not-found`.
+- **Headless-browser check** (2026-11-12): `node scripts/check-web.ts http://127.0.0.1:8765`, using Chromium headless-shell 1248 via `playwright-core` 1.65.0, against `apps/web/out` served locally.
+  - It fails on any console error, uncaught page error, failed same-origin request or missing content.
+  - Pages checked:
+    - `/`: hero text, the launch list read from testnet, and the wallet selector opening;
+    - `/create/`;
+    - `/launch/?id=0` and `/launch/?id=1`: launch data, histogram bars, clearing price, Floor Keeper panel;
+    - `/why/`: simulation table and chart image;
+    - a 404 page.
+  - **Result: 6/6 clean.** Screenshots are in `verification/web-check/`; the report is in `results/web-check-*.json`.
+  - Two filters added after the first run, which flagged only browser noise:
+    - `net::ERR_ABORTED` (Next.js link prefetches cancelled when the page closes);
+    - the deliberate 404 page's own 404 console line.
+- **Visual review of the screenshots found 5 presentation bugs, all fixed and re-checked:**
+  1. Overlapping x-axis labels next to the clearing tick.
+  2. The clearing-price label overlapping the chart caption.
+  3. "Burned" showing "–" instead of 0 after finalize.
+  4. An empty action panel when no wallet is connected.
+  5. Odd tick values on the simulation chart's ROI axis (now −200/0/200/400/600%).
+- **Machine note.** This machine lacks `libnss3`. The check ran with NSS libraries extracted from `apt-get download libnss3 libnspr4` (no root), passed via `CHROMIUM_LIBS`.
+- **Not done:**
+  - **The check against a hosted URL**: nothing is hosted yet. Re-run with `node scripts/check-web.ts <hosted-url>` once it is.
+  - **Signing a transaction with a real wallet.** The check only proves the selector opens.
 
 ## 7. Fresh-clone test (2026-11-10)
 

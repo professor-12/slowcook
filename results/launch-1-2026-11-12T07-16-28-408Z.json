@@ -1,0 +1,528 @@
+{
+  "label": "REAL testnet run (test NEAR, no real value)",
+  "factory": "slowcook-0dd752.testnet",
+  "launch_id": "1",
+  "token": "deep-1.slowcook-0dd752.testnet",
+  "args": {
+    "name": "SlowCook Deep Pool",
+    "symbol": "DEEP",
+    "icon": null,
+    "total_supply": "1000000",
+    "sale_bps": 6000,
+    "lp_bps": 3000,
+    "creator_bps": 1000,
+    "p_min": "8441866397879956656",
+    "commit_secs": 90,
+    "reveal_secs": 90,
+    "k_obs": 3,
+    "h_obs": 6,
+    "r_bps": 1000,
+    "epoch_secs": 120,
+    "poke_interval_secs": 10,
+    "penalty_bps": 500
+  },
+  "buckets": [
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "266304",
+    "173676",
+    "151023",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "9409",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0",
+    "0"
+  ],
+  "clearing_price_yocto": "19526549953584173415",
+  "filled": "600000",
+  "burned": "0",
+  "token_total_supply": "1000000000000000000000000",
+  "pool": {
+    "near_reserve": "5857964986075252024500000",
+    "token_reserve": "300000000000000000000000",
+    "price_cumulative": "1373536576835017926357930",
+    "last_update_ms": "1794467786892"
+  },
+  "spot_price": "19526549953584173415",
+  "treasury_near": "5929464748717242631183533",
+  "every_winner_paid_clearing_price": true,
+  "sniper_bidder": "b0-7m6fb.sc-bidders-da9146.testnet",
+  "prediction": {
+    "model": "sim/src/clearing.ts (parity-tested)",
+    "clearing_price": "19526549953584173415",
+    "filled": "600000",
+    "pool_near": "5857964986075252024500000",
+    "treasury_near": "5857964986075252024500000"
+  },
+  "onchain_matches_prediction": {
+    "clearing_price": true,
+    "filled": true,
+    "pool_near": true
+  },
+  "claims": [
+    {
+      "bidder": "b0-7m6fb.sc-bidders-da9146.testnet",
+      "tick": 20,
+      "qty": "9409",
+      "deposit": "1429984846982874651155200",
+      "filled": "9409",
+      "paid": "183725308513273487661735",
+      "refund": "1246259538469601163493465",
+      "penalty": "0",
+      "tx": "https://testnet.nearblocks.io/txns/GSMddvWnuJjV5M7hwjWLUa3Ckg5bjn5LHz5Q5pth1ps9"
+    },
+    {
+      "bidder": "b1-7m6fb.sc-bidders-da9146.testnet",
+      "tick": 6,
+      "qty": "66576",
+      "deposit": "1429999548680801922204744",
+      "filled": "66473",
+      "paid": "1297988355064600759415295",
+      "refund": "132011193616201162789449",
+      "penalty": "0",
+      "tx": "https://testnet.nearblocks.io/txns/BGVteFcbGTo9eGRSHEVwKXERJKE3Sa3xS2NSfcuCqWXm"
+    },
+    {
+      "bidder": "b2-7m6fb.sc-bidders-da9146.testnet",
+      "tick": 7,
+      "qty": "57892",
+      "deposit": "1429995252839812133670672",
+      "filled": "57892",
+      "paid": "1130431029912894967341180",
+      "refund": "299564222926917166329492",
+      "penalty": "0",
+      "tx": "https://testnet.nearblocks.io/txns/6zqahDGa7hrdnHThGxBezMmQNbqhYWNWkNz7qwZAE43C"
+    },
+    {
+      "bidder": "b3-7m6fb.sc-bidders-da9146.testnet",
+      "tick": 8,
+      "qty": "50341",
+      "deposit": "1429998958002665826264809",
+      "filled": "50341",
+      "paid": "982986051213380873884515",
+      "refund": "447012906789284952380294",
+      "penalty": "0",
+      "tx": "https://testnet.nearblocks.io/txns/5ndggKEdvjXz6efqG2j5nGbHe9EgTrfyB5iCddTNE5Ub"
+    },
+    {
+      "bidder": "b4-7m6fb.sc-bidders-da9146.testnet",
+      "tick": 6,
+      "qty": "66576",
+      "deposit": "1429999548680801922204744",
+      "filled": "66473",
+      "paid": "1297988355064600759415295",
+      "refund": "132011193616201162789449",
+      "penalty": "0",
+      "tx": "https://testnet.nearblocks.io/txns/CJpjY5uuzmgTnJFyjZFpKXK2ftp6Y1VfbRx9Dbvmqc31"
+    },
+    {
+      "bidder": "b5-7m6fb.sc-bidders-da9146.testnet",
+      "tick": 7,
+      "qty": "57892",
+      "deposit": "1429995252839812133670672",
+      "filled": "57892",
+      "paid": "1130431029912894967341180",
+      "refund": "299564222926917166329492",
+      "penalty": "0",
+      "tx": "https://testnet.nearblocks.io/txns/6eWZfzsQB6G2FZpNQUHLmjqfpXFdkVjiHomDddoqLLoW"
+    },
+    {
+      "bidder": "b6-7m6fb.sc-bidders-da9146.testnet",
+      "tick": 8,
+      "qty": "50341",
+      "deposit": "1429998958002665826264809",
+      "filled": "50341",
+      "paid": "982986051213380873884515",
+      "refund": "447012906789284952380294",
+      "penalty": "0",
+      "tx": "https://testnet.nearblocks.io/txns/6ByQtyLMwveYZGaFAvBGTLypdR6LrpbVkTFpNYuUxG4P"
+    },
+    {
+      "bidder": "b7-7m6fb.sc-bidders-da9146.testnet",
+      "tick": 6,
+      "qty": "66576",
+      "deposit": "1429999548680801922204744",
+      "filled": "66473",
+      "paid": "1297988355064600759415295",
+      "refund": "132011193616201162789449",
+      "penalty": "0",
+      "tx": "https://testnet.nearblocks.io/txns/H2iTUtj3TwK8j4yQhM2YzqVCdjxWcSu1mPuEt5UeYcLb"
+    },
+    {
+      "bidder": "b8-7m6fb.sc-bidders-da9146.testnet",
+      "tick": 7,
+      "qty": "57892",
+      "deposit": "1429995252839812133670672",
+      "filled": "57892",
+      "paid": "1130431029912894967341180",
+      "refund": "299564222926917166329492",
+      "penalty": "0",
+      "tx": "https://testnet.nearblocks.io/txns/3s8HFn2cCPxMTkBxp3rKTpJv8rkTe1QB4tXkwFMzEurq"
+    },
+    {
+      "bidder": "b9-7m6fb.sc-bidders-da9146.testnet",
+      "tick": 8,
+      "qty": "50341",
+      "deposit": "1429998958002665826264809",
+      "filled": "50341",
+      "paid": "982986051213380873884515",
+      "refund": "447012906789284952380294",
+      "penalty": "0",
+      "tx": "https://testnet.nearblocks.io/txns/EcQWVKHhoMiGk2ViDmBaUcS1nM5Mh8iZ1Ny88fTnZj6V"
+    },
+    {
+      "bidder": "b10-7m6fb.sc-bidders-da9146.testnet",
+      "tick": 6,
+      "qty": "66576",
+      "deposit": "1429999548680801922204744",
+      "filled": "66473",
+      "paid": "1297988355064600759415295",
+      "refund": "132011193616201162789449",
+      "penalty": "0",
+      "tx": "https://testnet.nearblocks.io/txns/ERa85XP7ovZeF3s8ieJC66NNjup4Mx73gJf68smXV7QC"
+    }
+  ],
+  "steps": [
+    {
+      "step": "create wallet b0-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/BwK2DPoU41aFqRjqaRjSjayNKy4E94MKR7AFmnAVo6Eo"
+    },
+    {
+      "step": "create wallet b1-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/AbdwJ1wRK9VxRHWpaaSunxCVXK6Y3ruZqSnH1CJHTJCg"
+    },
+    {
+      "step": "create wallet b2-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/8pinLoud92aUTkxB77H3YAuywacUvaRgSsSjfA892gRp"
+    },
+    {
+      "step": "create wallet b3-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/JD1uLtohpBeX5zD2i3vHBoUx7n6gZiR1gJYcWCra2SoV"
+    },
+    {
+      "step": "create wallet b4-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/4Dpmjbmxfnh4JfXFekGzUjMK67yhWFk7PnxHoHzS7mNF"
+    },
+    {
+      "step": "create wallet b5-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/BVXZJwcSZv4WMk6C32baqNqPcxUwkDFVAYVQfpf1hWcr"
+    },
+    {
+      "step": "create wallet b6-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/7vWWXCxXKV9hmKByzvvobRYPkupAcUYM5p9bihMo7qZb"
+    },
+    {
+      "step": "create wallet b7-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/7wRZMvkYGdewkPMZ36XQFGgVx6qZZaYNeanksMaVrfCg"
+    },
+    {
+      "step": "create wallet b8-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/J4MdJYdxVabBg2xNQq6SxZhZmQcuuHVCvRw7FYKdvEts"
+    },
+    {
+      "step": "create wallet b9-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/4yDFZ3hBkn2pfc2f8ChN7rDhCpqsHrQFZUTWLz5tapLH"
+    },
+    {
+      "step": "create wallet b10-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/5nY8ezJ3q6LdAFji6M4gDNrBJMKUb3AQHNie3n2VgWSu"
+    },
+    {
+      "step": "create wallet b11-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/42DvK5FZDsF3qK5uEHn6SJiZDuUVrVQXLPdp83qsDEnd"
+    },
+    {
+      "step": "create_launch",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/GN3STC17XBWJFXiGmpfoq1HWQtfwFcy1NmHzAWcS9fGs"
+    },
+    {
+      "step": "commit b1-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/8qS9zG6ibYxFNr8muTHFx6VBULYjBxBujRC31rscsLs2",
+      "note": "deposit 1.4300 NEAR"
+    },
+    {
+      "step": "commit b2-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/HkTR6QmpNCsEVXTgwcMP5UiTKGjqAXzdbFt7aTFagqqM",
+      "note": "deposit 1.4300 NEAR"
+    },
+    {
+      "step": "commit b0-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/9U5PKZwod7YFhBaXG1Q8ac6pS7spQsfw7aj31D9FEPzL",
+      "note": "deposit 1.4300 NEAR"
+    },
+    {
+      "step": "commit b7-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/6dYGxcjeFyicN9q5UbMJqdfHBfzjNxy2x1E7wEgDftCB",
+      "note": "deposit 1.4300 NEAR"
+    },
+    {
+      "step": "commit b5-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/8vCs2Ma1ss9zuXdQjpob9Ana9jJn7b9pqT4saQcSLpMC",
+      "note": "deposit 1.4300 NEAR"
+    },
+    {
+      "step": "commit b6-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/3EiY4Kbj3ySWvnkvYLkMJXpFTNDkUC22naapRM3HQx52",
+      "note": "deposit 1.4300 NEAR"
+    },
+    {
+      "step": "commit b4-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/8BkFGpBf52RbkNM57TWaqVPJrP67oRHCNGD53pwRDfmr",
+      "note": "deposit 1.4300 NEAR"
+    },
+    {
+      "step": "commit b3-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/HJaKFraFAc3Rq1ypex1vm7Vcqb4kRaxekQpcPhKPShFx",
+      "note": "deposit 1.4300 NEAR"
+    },
+    {
+      "step": "commit b8-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/6n9sPbqm49NCB1j2D1XeWZ2EmiqKYS4de4vDBWRyvhAG",
+      "note": "deposit 1.4300 NEAR"
+    },
+    {
+      "step": "commit b9-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/6x1DFshunQK435vt3WLK7Hcg9DjEy1csQMFKozYtPL1P",
+      "note": "deposit 1.4300 NEAR"
+    },
+    {
+      "step": "commit b11-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/3hkgwtRzAsWpCECNaBEj1MSRNPWw4oR99seXhE8M1yNq",
+      "note": "deposit 1.4300 NEAR"
+    },
+    {
+      "step": "commit b10-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/C8NH87XugT1zKWKUqn2EACSRSbr2SRwTD9AANp5Zc19x",
+      "note": "deposit 1.4300 NEAR"
+    },
+    {
+      "step": "reveal with WRONG salt b2-7m6fb.sc-bidders-da9146.testnet (must fail E_HASH)",
+      "ok": false,
+      "tx": "https://testnet.nearblocks.io/txns/EtCZhXJW4A8HDhZ5xYn8Uw2No8RZuv3bYeyDAys5qrgF",
+      "note": "rejected as expected"
+    },
+    {
+      "step": "reveal b2-7m6fb.sc-bidders-da9146.testnet",
+      "ok": false,
+      "tx": "(not sent)",
+      "note": "tick 7, qty 57892"
+    },
+    {
+      "step": "reveal b1-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/J1h4KzxYjVB5L5R7YYFbjS8LXu6MqdxH7XFiHzi7gNmg",
+      "note": "tick 6, qty 66576"
+    },
+    {
+      "step": "reveal b0-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/AMg5VVPefLDFRoUJyXFRqCJvEv1FJ6wRaHbzH97t1AvU",
+      "note": "tick 20, qty 9409"
+    },
+    {
+      "step": "reveal b5-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/EYPDpTyzDvDWxRtbChBjKXrtvu5iVBitYRL92inBsdNw",
+      "note": "tick 7, qty 57892"
+    },
+    {
+      "step": "reveal b6-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/BkDWanVfXrgzhEQc1pkfmepqYFXpHqnkEgsGQcD9oFcJ",
+      "note": "tick 8, qty 50341"
+    },
+    {
+      "step": "reveal b4-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/DW3H92VPWMfoiRRtPUDJjeg21Nfib2tZrXLEQXV3YL7P",
+      "note": "tick 6, qty 66576"
+    },
+    {
+      "step": "reveal b3-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/EBYsWVtHz7QpMUAqFprivF1JCXG1bfBmatLJ1AQRaoFp",
+      "note": "tick 8, qty 50341"
+    },
+    {
+      "step": "reveal b7-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/7JNEFDLNeMQuFMdtEJYQDtk2wnyoU6kdCdoZ2rDd2wnk",
+      "note": "tick 6, qty 66576"
+    },
+    {
+      "step": "reveal b8-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/DhocKZqHDiMYoZsA3DhUZ8caQjgDaSoSCKtdP56arB3r",
+      "note": "tick 7, qty 57892"
+    },
+    {
+      "step": "reveal b10-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/mNXXRM48c2b1mQ524dTNkXn7Vx8PMzg4yMgw6N94xcn",
+      "note": "tick 6, qty 66576"
+    },
+    {
+      "step": "reveal b9-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/aUYDFhJc2DsuYMGuusa1bLz2v4Y7co9vx4jgQP763Cg",
+      "note": "tick 8, qty 50341"
+    },
+    {
+      "step": "finalize",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/so2LEkqWAMjBxJwyFYuXQsUjLtAEFppxfqgKLVyCKCT"
+    },
+    {
+      "step": "claim b0-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/GSMddvWnuJjV5M7hwjWLUa3Ckg5bjn5LHz5Q5pth1ps9",
+      "note": "filled 9409, paid 0.1837 NEAR, refund 1.2463 NEAR"
+    },
+    {
+      "step": "claim b1-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/BGVteFcbGTo9eGRSHEVwKXERJKE3Sa3xS2NSfcuCqWXm",
+      "note": "filled 66473, paid 1.2980 NEAR, refund 0.1320 NEAR"
+    },
+    {
+      "step": "claim b2-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/6zqahDGa7hrdnHThGxBezMmQNbqhYWNWkNz7qwZAE43C",
+      "note": "filled 57892, paid 1.1304 NEAR, refund 0.2996 NEAR"
+    },
+    {
+      "step": "claim b3-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/5ndggKEdvjXz6efqG2j5nGbHe9EgTrfyB5iCddTNE5Ub",
+      "note": "filled 50341, paid 0.9830 NEAR, refund 0.4470 NEAR"
+    },
+    {
+      "step": "claim b4-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/CJpjY5uuzmgTnJFyjZFpKXK2ftp6Y1VfbRx9Dbvmqc31",
+      "note": "filled 66473, paid 1.2980 NEAR, refund 0.1320 NEAR"
+    },
+    {
+      "step": "claim b5-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/6eWZfzsQB6G2FZpNQUHLmjqfpXFdkVjiHomDddoqLLoW",
+      "note": "filled 57892, paid 1.1304 NEAR, refund 0.2996 NEAR"
+    },
+    {
+      "step": "claim b6-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/6ByQtyLMwveYZGaFAvBGTLypdR6LrpbVkTFpNYuUxG4P",
+      "note": "filled 50341, paid 0.9830 NEAR, refund 0.4470 NEAR"
+    },
+    {
+      "step": "claim b7-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/H2iTUtj3TwK8j4yQhM2YzqVCdjxWcSu1mPuEt5UeYcLb",
+      "note": "filled 66473, paid 1.2980 NEAR, refund 0.1320 NEAR"
+    },
+    {
+      "step": "claim b8-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/3s8HFn2cCPxMTkBxp3rKTpJv8rkTe1QB4tXkwFMzEurq",
+      "note": "filled 57892, paid 1.1304 NEAR, refund 0.2996 NEAR"
+    },
+    {
+      "step": "claim b9-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/EcQWVKHhoMiGk2ViDmBaUcS1nM5Mh8iZ1Ny88fTnZj6V",
+      "note": "filled 50341, paid 0.9830 NEAR, refund 0.4470 NEAR"
+    },
+    {
+      "step": "claim b10-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/ERa85XP7ovZeF3s8ieJC66NNjup4Mx73gJf68smXV7QC",
+      "note": "filled 66473, paid 1.2980 NEAR, refund 0.1320 NEAR"
+    },
+    {
+      "step": "refund_unrevealed b11-7m6fb.sc-bidders-da9146.testnet",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/8uU6DuB91Gq1djY8GNPCetTkrRc4v8TPDnEi2dSkBWzg",
+      "note": "penalty 0.0715 NEAR to treasury"
+    }
+  ],
+  "note": "Two client processes ran concurrently by mistake: the original run (this log) and a --resume run started when a log-watcher misread a logged RPC timeout as a crash. Wallet b2's reveal landed via the resume run (https://testnet.nearblocks.io/txns/FBeJDUsRXu79Umc3T9bxEM3LfbFBuzhti6D6TrMar4U1), so the original run's b2 reveal got E_DUP; the resume run's attempts to re-reveal the other 10 bids were all rejected E_DUP (contract invariant I6 holding on testnet). The resume run was stopped before finalize; finalize and all claims are from the original run."
+}

@@ -76,8 +76,15 @@ const d2 = await call(keeper, FACTORY, "defend", { launch_id: launchId }, { tgas
 record("defend #2 in same epoch (expect E_EPOCH_CAP)", d2);
 
 console.log("\n== 5. price recovers; creator unlock after it holds");
-const buy = await call(keeper, FACTORY, "swap_near_for_token", { launch_id: launchId, min_out: "0" }, { deposit: 2n * 10n ** 24n, tgas: 100 });
-record("buyer swaps 2 NEAR for tokens", buy);
+// Size the buy to lift spot ~10% above clearing: x' = sqrt(target * x * y / 1e18), plus 1% for the fee.
+const isqrt = (n: bigint) => { if (n < 2n) return n; let x = n, y = (x + 1n) / 2n; while (y < x) { x = y; y = (x + n / x) / 2n; } return x; };
+const pl = (await view(FACTORY, "get_pool", { launch_id: launchId })).pool;
+const [x, y] = [BigInt(pl.near_reserve), BigInt(pl.token_reserve)];
+const target = (clearing * 110n) / 100n;
+const needNear = isqrt((target * x * y) / 10n ** 18n) - x;
+const buyNear = needNear > 0n ? (needNear * 101n) / 100n : 10n ** 23n;
+const buy = await call(keeper, FACTORY, "swap_near_for_token", { launch_id: launchId, min_out: "0" }, { deposit: buyNear, tgas: 100 });
+record(`buyer swaps ${fmtNear(buyNear)} NEAR for tokens (sized to lift spot ~10% above clearing)`, buy);
 console.log(`    spot now ${await spot()} (clearing ${clearing})`);
 await pokeN(h + 1, "recovery");
 const un = await call(account(CREATOR), FACTORY, "unlock_creator", { launch_id: launchId }, { tgas: 150 });

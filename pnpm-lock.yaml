@@ -196,6 +196,10 @@ importers:
       near-api-js:
         specifier: 7.4.0
         version: 7.4.0
+    devDependencies:
+      playwright-core:
+        specifier: 1.65.0
+        version: 1.65.0
 
   sim: {}
 
@@ -660,6 +664,11 @@ packages:
 
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
+
+  playwright-core@1.65.0:
+    resolution: {integrity: sha512-vNSKgH6YqtN7cdT/L334zo0a+YwkrpicyrHJlWWPIm/Q+Nn2SWInil01oT0mbu96U4GgoRtCYQD9CzJQgju+lA==}
+    engines: {node: '>=20'}
+    hasBin: true
 
   possible-typed-array-names@1.1.0:
     resolution: {integrity: sha512-/+5VFTchJDoVj3bhoqi6UeymcD00DAwb1nJwamzPvHEszJ4FpF6SNNbUbOS8yI56qHzdV8eK0qEfOSiodkTdxg==}
@@ -1196,6 +1205,8 @@ snapshots:
       to-buffer: 1.2.2
 
   picocolors@1.1.1: {}
+
+  playwright-core@1.65.0: {}
 
   possible-typed-array-names@1.1.0: {}
 

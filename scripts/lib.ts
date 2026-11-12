@@ -35,7 +35,7 @@ export const RPC_FALLBACK = ENV.NEAR_RPC_FALLBACK ?? "https://test.rpc.fastnear.
 export const EXPLORER = "https://testnet.nearblocks.io";
 export const provider = new FailoverRpcProvider([new JsonRpcProvider({ url: RPC }), new JsonRpcProvider({ url: RPC_FALLBACK })]);
 
-const NET_ERR = /ETIMEDOUT|ENETUNREACH|ECONNRESET|ECONNREFUSED|EAI_AGAIN|fetch failed|socket hang up|timeout|Exceeded \d+ attempts/i;
+const NET_ERR = /ETIMEDOUT|ENETUNREACH|ECONNRESET|ECONNREFUSED|EAI_AGAIN|fetch failed|socket hang up|timeout|Exceeded \d+ (attempts|providers)|RetriesExceeded/i;
 /** Retry on transport errors only. Contract calls are idempotent here: a duplicate after a lost
  *  response fails with E_DUP / E_TOO_SOON and is reported as such. */
 export async function withRetry<T>(f: () => Promise<T>, label: string, tries = 5): Promise<T> {
@@ -43,7 +43,7 @@ export async function withRetry<T>(f: () => Promise<T>, label: string, tries = 5
     try {
       return await f();
     } catch (e) {
-      const m = String((e as Error)?.message ?? e) + String((e as any)?.cause ?? "");
+      const m = [e, (e as any)?.cause, ...((e as any)?.errors ?? [])].map((x) => String((x as Error)?.message ?? x) + String((x as any)?.code ?? "")).join(" ");
       if (i >= tries || !NET_ERR.test(m)) throw e;
       console.log(`   (network error on ${label}, retry ${i}/${tries - 1})`);
       await new Promise((r) => setTimeout(r, 1500 * i));

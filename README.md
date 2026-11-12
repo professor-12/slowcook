@@ -73,7 +73,32 @@ Honest reading:
 
 ### REAL: NEAR testnet
 
-Factory: **`slowcook-0dd752.testnet`**. The on-chain code hash `9A6qZZvajAXpEfa7UCrzNuZ1HF1ushD8wb7TdCSiSsEy` equals this repo's build. Launch 0 token: **`slow-0.slowcook-0dd752.testnet`**.
+Factory: **`slowcook-0dd752.testnet`**. Its on-chain code hash `9A6qZZvajAXpEfa7UCrzNuZ1HF1ushD8wb7TdCSiSsEy` equals this repo's build.
+
+#### Launch 1: deep pool (`deep-1.slowcook-0dd752.testnet`, 2026-11-12)
+
+12 wallets with 1.3 NEAR of buying power each.
+
+**Prediction.** Before anything was sent, the TS model (the parity-tested mirror of the contract math) predicted the clearing price, tokens sold and pool depth. **The on-chain result matched all three exactly**: `onchain_matches_prediction` in the log.
+
+| Step | Result | Tx |
+|---|---|---|
+| 12 wallets commit sealed bids | Only hashes and deposits are on-chain; the bid view shows `tick=null qty=null` | [create_launch](https://testnet.nearblocks.io/txns/GN3STC17XBWJFXiGmpfoq1HWQtfwFcy1NmHzAWcS9fGs) · [a commit](https://testnet.nearblocks.io/txns/8qS9zG6ibYxFNr8muTHFx6VBULYjBxBujRC31rscsLs2) |
+| Reveal with a wrong salt | Rejected `E_HASH` | [tx](https://testnet.nearblocks.io/txns/EtCZhXJW4A8HDhZ5xYn8Uw2No8RZuv3bYeyDAys5qrgF) |
+| `finalize` | **One clearing price: 1.953e-5 NEAR/token** (tick 6). All 600,000 sale tokens sold, 0 burned. **The pool opens at exactly that price with 5.858 NEAR + 300,000 tokens.** Treasury 5.93 NEAR | [tx](https://testnet.nearblocks.io/txns/so2LEkqWAMjBxJwyFYuXQsUjLtAEFppxfqgKLVyCKCT) |
+| The "sniper" (bid ~7× above clearing) claims | Paid exactly clearing × 9,409 = 0.1837 NEAR, **the same price per token as everyone**; the rest of the deposit refunded | [tx](https://testnet.nearblocks.io/txns/GSMddvWnuJjV5M7hwjWLUa3Ckg5bjn5LHz5Q5pth1ps9) |
+| Unrevealed bid | 0.0715 NEAR (5%) penalty → treasury | [tx](https://testnet.nearblocks.io/txns/8uU6DuB91Gq1djY8GNPCetTkrRc4v8TPDnEi2dSkBWzg) |
+| Creator unlock right after launch | `E_LOCKED` | [tx](https://testnet.nearblocks.io/txns/3AUwtZ8vChDJ4KTr1H9Q7zC4DsU5D4Zb63atzPZw3xJN) |
+| 6 holders dump 308,480 tokens: spot falls to 24% of clearing. Then `defend` before the trigger | `E_TRIGGER` | [tx](https://testnet.nearblocks.io/txns/DtdN6JUAgpW8p47AqbgArCrNL283DeKHDEkZ6k3q5fiG) |
+| 3 TWAP intervals below the floor → `defend` | Spent **0.5929 NEAR = exactly the 10% epoch cap**. Bought and **burned 103,215 tokens**; supply 1,000,000 → 896,784 | [tx](https://testnet.nearblocks.io/txns/CaWtxdoqnjjLRqHXHSYJpwQvEPxHNv8f2BWU8pRLXLmh) |
+| `defend` again in the same epoch | `E_EPOCH_CAP` | [tx](https://testnet.nearblocks.io/txns/D3KCfRbkMJECbjdWqwa4Bjk5fzdXGKwsk4xFDuqYjPcX) |
+| A 2.69 NEAR buy lifts spot to 1.11× clearing; it holds for 6 intervals → `unlock_creator` | Creator receives 100,000 tokens | [buy](https://testnet.nearblocks.io/txns/DfCA1VXMZWbUCFGdAoHFpazXd3AGedHAvjmYFb5npd8o) · [unlock](https://testnet.nearblocks.io/txns/FnVVh9KXAxgDzSw553H9wQTdP15eQjTTMFT7nWY7za6H) |
+
+Logs with every transaction: [`results/launch-1-*.json`](results/), [`results/dump-1-*.json`](results/).
+
+<details><summary>Launch 0: first run, thin pool (~0.7 NEAR), 2026-11-09</summary>
+
+Launch 0 token: `slow-0.slowcook-0dd752.testnet`.
 
 | Step | Result | Tx |
 |---|---|---|
@@ -89,12 +114,14 @@ Factory: **`slowcook-0dd752.testnet`**. The on-chain code hash `9A6qZZvajAXpEfa7
 | `defend` again, same epoch | `E_EPOCH_CAP` | [tx](https://testnet.nearblocks.io/txns/exkZu2KgAushWQcfDVpp24SGsKVw5CWxWEjxAuCG45N) |
 | Price recovers and holds 6+ intervals → `unlock_creator` | Creator receives 99,999 tokens | [tx](https://testnet.nearblocks.io/txns/C7GCT6rJGsBz3AnGJNoF9fWfsRY4zKSqy74zPiAxerPk) |
 
-Full logs with every transaction: [`results/launch-0-*.json`](results/), [`results/dump-0-*.json`](results/), and [`verification/test-report.md`](verification/test-report.md) §3.
+Logs: [`results/launch-0-*.json`](results/), [`results/dump-0-*.json`](results/). Launch 0 ran on the build just before a lint-only refactor; the factory was then redeployed with this repo's build ([`verification/test-report.md`](verification/test-report.md) §3).
+</details>
 
-Caveats:
-- It is one launch, and every wallet was script-controlled.
-- The pool is tiny (about 0.7 NEAR), so price moves are exaggerated.
-- Launch 0 ran on the build just before a lint-only refactor. The factory was then redeployed with this repo's build; the diff is described in the test report.
+**Caveats**
+- Every wallet, the keeper and the buyer were script-controlled.
+- Two launches are not a market.
+- With the default split, the pool holds LP tokens equal to half the tokens sold. So dumping a given share of the sold supply moves the price by about the same proportion in any launch.
+- The pool's NEAR depth sets how much NEAR it takes to move the price back. Launch 1 needed 2.69 NEAR to reach 1.11× clearing; on launch 0's thin pool, 2 NEAR overshot to about 11×.
 
 ### Tests: every rule is a contract function with a test
 
@@ -189,9 +216,16 @@ Full threat model: [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md).
 
 ## Related projects (Q-015)
 
-To be confirmed by the team. Per Q-015, every member must list the other submission they are part of (each person may be on at most 2):
-- **FRONTIER**: https://github.com/willy264/near (invoice clearing), if a SlowCook member is also on it.
-- **Veil**, if a SlowCook member is also on it.
+NEAR HACKATHON rule Q-015: a person may be on **at most 2** submissions, and each README names the other.
+
+| Member | Role in SlowCook | Other NEAR HACKATHON entry |
+|---|---|---|
+| Partner A | Lead | **[to confirm: "none", or project name + repo URL]** |
+
+- The project owner is **not** a SlowCook member. They already lead two entries, so they are at the limit:
+  - **FRONTIER**;
+  - an invoice-clearing project (https://github.com/willy264/near).
+- SlowCook is an independent submission with its own repo and code.
 
 ## License
 

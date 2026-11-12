@@ -1,0 +1,222 @@
+{
+  "label": "REAL testnet run (test NEAR, no real value)",
+  "factory": "slowcook-0dd752.testnet",
+  "launch_id": "1",
+  "token": "deep-1.slowcook-0dd752.testnet",
+  "clearing_price": "19526549953584173415",
+  "tokens_dumped": "308480000000000000000000",
+  "treasury_before": "5929464748717242631183533",
+  "treasury_after": "5336518273845518368065180",
+  "defend_1": {
+    "launch_id": 1,
+    "spent": "592946474871724263118353",
+    "burned": "103215890672705357110241",
+    "spot_before": "4755938467492575078",
+    "spot_after": "6901024334014071147",
+    "epoch_remaining": "0"
+  },
+  "supply_before_defend": "1000000000000000000000000",
+  "supply_after_defend": "896784109327294642889759",
+  "defend_2_error": "E_EPOCH_CAP",
+  "creator_unlocked": true,
+  "creator_balance": "100000000000000000000000",
+  "solvency": {
+    "balance": "24734984284283994493293789",
+    "storage_locked": "4708720000000000000000000",
+    "owed": "14540941328957138793293814",
+    "solvent": true
+  },
+  "steps": [
+    {
+      "step": "unlock_creator (expect E_LOCKED)",
+      "ok": false,
+      "tx": "https://testnet.nearblocks.io/txns/3AUwtZ8vChDJ4KTr1H9Q7zC4DsU5D4Zb63atzPZw3xJN",
+      "error": "{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: E_LOCKED: price has not held at/above clearing for h_obs observations\"}}}}"
+    },
+    {
+      "step": "poke (close the at-clearing interval)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/HkE6NNBhTAyS4jP4tue4TRYqLEzCLkiba3DHxcUxApFe"
+    },
+    {
+      "step": "dump b0-7m6fb.sc-bidders-da9146.testnet sells 9409 tokens",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/6W1emjXkDR5zQTSWXqiBTRu5ouoFHabcgCnQjZih96pY"
+    },
+    {
+      "step": "dump b1-7m6fb.sc-bidders-da9146.testnet sells 66473 tokens",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/48XHziLpSsT95ztrCwLC3ttcc3FPMMwEy5SxG7z1vuPj"
+    },
+    {
+      "step": "dump b2-7m6fb.sc-bidders-da9146.testnet sells 57892 tokens",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/3TVB6fjqy146BfWpjp1rXZUiDUQ73FQjPVzfc16MnqPE"
+    },
+    {
+      "step": "dump b3-7m6fb.sc-bidders-da9146.testnet sells 50341 tokens",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/Cj97CiHtzGvti8EtFgB2c8Mb9yi1Wo78brxkDqDVAvww"
+    },
+    {
+      "step": "dump b4-7m6fb.sc-bidders-da9146.testnet sells 66473 tokens",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/64LKcqNykoTzfXDSUN2WiFyGkVdLcx9ESxdUVmKP9uVM"
+    },
+    {
+      "step": "dump b5-7m6fb.sc-bidders-da9146.testnet sells 57892 tokens",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/HiWhS2iPPbYvqvVVFnmVtwpFsBy6aQ2oSk2W6vENmUVb"
+    },
+    {
+      "step": "defend before trigger (expect E_TRIGGER)",
+      "ok": false,
+      "tx": "https://testnet.nearblocks.io/txns/DtdN6JUAgpW8p47AqbgArCrNL283DeKHDEkZ6k3q5fiG",
+      "error": "{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: E_TRIGGER: TWAP has not been below the floor for k_obs observations\"}}}}"
+    },
+    {
+      "step": "poke 1/3 (after dump)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/ET8vRABqqwLpWHvHbk99YqLPX6CcgJqN688uv6q1JQEu",
+      "twap": "9331821933490035870",
+      "floor": "17573894958225756073",
+      "below_streak": 1,
+      "above_streak": 0
+    },
+    {
+      "step": "poke 2/3 (after dump)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/ACsxrGNre5VFrRa4N4ajB5w9BL7hG3LLt58tGvR5pmJ2",
+      "twap": "4755938467492575078",
+      "floor": "17573894958225756073",
+      "below_streak": 2,
+      "above_streak": 0
+    },
+    {
+      "step": "poke 3/3 (after dump)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/BEf5PvzMdNeLMB9d7pu5eHnenhiDQsqNDVPtdaD6VCNv",
+      "twap": "4755938467492575078",
+      "floor": "17573894958225756073",
+      "below_streak": 3,
+      "above_streak": 0
+    },
+    {
+      "step": "defend #1",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/CaWtxdoqnjjLRqHXHSYJpwQvEPxHNv8f2BWU8pRLXLmh",
+      "launch_id": 1,
+      "spent": "592946474871724263118353",
+      "burned": "103215890672705357110241",
+      "spot_before": "4755938467492575078",
+      "spot_after": "6901024334014071147",
+      "epoch_remaining": "0"
+    },
+    {
+      "step": "poke 1/3 (same epoch)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/AbSRPgByvtjkyNVj8BdAunUtGsu5FynYbPrfgTTuzYfo",
+      "twap": "6434853558062913533",
+      "floor": "17573894958225756073",
+      "below_streak": 1,
+      "above_streak": 0
+    },
+    {
+      "step": "poke 2/3 (same epoch)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/CuyR5j1yYqpaLvAzKT5BHsAAmfiZraD1aZws9dPizL8",
+      "twap": "6901024334014071147",
+      "floor": "17573894958225756073",
+      "below_streak": 2,
+      "above_streak": 0
+    },
+    {
+      "step": "poke 3/3 (same epoch)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/6ZQTQw1rY75hwy5fcu6GNZcT16P4B7dtQtNeoUt8eEfe",
+      "twap": "6901024334014071147",
+      "floor": "17573894958225756073",
+      "below_streak": 3,
+      "above_streak": 0
+    },
+    {
+      "step": "defend #2 in same epoch (expect E_EPOCH_CAP)",
+      "ok": false,
+      "tx": "https://testnet.nearblocks.io/txns/D3KCfRbkMJECbjdWqwa4Bjk5fzdXGKwsk4xFDuqYjPcX",
+      "error": "{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: E_EPOCH_CAP: epoch budget spent\"}}}}"
+    },
+    {
+      "step": "buyer swaps 2.6914 NEAR for tokens (sized to lift spot ~10% above clearing)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/DfCA1VXMZWbUCFGdAoHFpazXd3AGedHAvjmYFb5npd8o"
+    },
+    {
+      "step": "poke 1/7 (recovery)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/2emS1CcxYHyQvgzejC766Zgc5VAegDtzKfZoLymrSqaT",
+      "twap": "17002024825896101527",
+      "floor": "17573894958225756073",
+      "below_streak": 4,
+      "above_streak": 0
+    },
+    {
+      "step": "poke 2/7 (recovery)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/8gPdy6hwVAXi6PXoq1jm99fNmFW2c7yKBBphYTQ5tG9C",
+      "twap": "21637379695770622793",
+      "floor": "17573894958225756073",
+      "below_streak": 0,
+      "above_streak": 1
+    },
+    {
+      "step": "poke 3/7 (recovery)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/GWGGZFYBB8pU7eWV41k4ao2D4QF5vs61LZEgvDqsFBK3",
+      "twap": "21637379695770622793",
+      "floor": "17573894958225756073",
+      "below_streak": 0,
+      "above_streak": 2
+    },
+    {
+      "step": "poke 4/7 (recovery)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/8JHAuDboaDYjVV3x3zkGFWMrC4ZpiZw3WpjBAfdXzkzi",
+      "twap": "21637379695770622793",
+      "floor": "17573894958225756073",
+      "below_streak": 0,
+      "above_streak": 3
+    },
+    {
+      "step": "poke 5/7 (recovery)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/6MehU8Ad1YgCYjuxvP7bM5C2u37d3Zx3b8AG6gX4ZVUt",
+      "twap": "21637379695770622793",
+      "floor": "17573894958225756073",
+      "below_streak": 0,
+      "above_streak": 4
+    },
+    {
+      "step": "poke 6/7 (recovery)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/HzptnGMTAQ7QCp6ZeBbHMDDP2E5QGEdjwn5hyz1YhtE",
+      "twap": "21637379695770622793",
+      "floor": "17573894958225756073",
+      "below_streak": 0,
+      "above_streak": 5
+    },
+    {
+      "step": "poke 7/7 (recovery)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/Dxkxhu2hR2CHVQmvEdwaZW1P6fKees8xqpf2HCRAeYPv",
+      "twap": "21637379695770622793",
+      "floor": "17573894958225756073",
+      "below_streak": 0,
+      "above_streak": 6
+    },
+    {
+      "step": "unlock_creator after price held",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/FnVVh9KXAxgDzSw553H9wQTdP15eQjTTMFT7nWY7za6H"
+    }
+  ]
+}

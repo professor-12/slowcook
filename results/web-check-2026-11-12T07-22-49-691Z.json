@@ -1,0 +1,54 @@
+{
+  "base": "http://127.0.0.1:8765",
+  "checkedAt": "2026-11-12T07:22:49.691Z",
+  "pages": [
+    {
+      "page": "/",
+      "ok": true,
+      "status": 200,
+      "problems": [],
+      "errors": [],
+      "wallet": "selector opened"
+    },
+    {
+      "page": "/create/",
+      "ok": true,
+      "status": 200,
+      "problems": [],
+      "errors": [],
+      "wallet": "skipped"
+    },
+    {
+      "page": "/launch/?id=0",
+      "ok": true,
+      "status": 200,
+      "problems": [],
+      "errors": [],
+      "wallet": "skipped"
+    },
+    {
+      "page": "/launch/?id=1",
+      "ok": true,
+      "status": 200,
+      "problems": [],
+      "errors": [],
+      "wallet": "skipped"
+    },
+    {
+      "page": "/why/",
+      "ok": true,
+      "status": 200,
+      "problems": [],
+      "errors": [],
+      "wallet": "skipped"
+    },
+    {
+      "page": "/this-page-does-not-exist/",
+      "ok": true,
+      "status": 404,
+      "problems": [],
+      "errors": [],
+      "wallet": "skipped"
+    }
+  ]
+}

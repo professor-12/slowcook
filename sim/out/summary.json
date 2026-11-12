@@ -1,7 +1,7 @@
 {
   "label": "SIMULATED — synthetic agents, not real market data. See sim/README.md for assumptions.",
   "seeds": 1000,
-  "generatedAt": "2026-11-09T16:30:17.118Z",
+  "generatedAt": "2026-11-12T07:19:38.084Z",
   "params": {
     "nBots": 10,
     "botBudget": [

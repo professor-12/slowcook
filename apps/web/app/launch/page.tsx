@@ -94,8 +94,8 @@ function Launch() {
         <Stat k="Sealed commits" v={l.num_commits} />
         <Stat k="Revealed" v={l.num_reveals} />
         <Stat k="Clearing price (NEAR/token)" v={l.clearing_price !== "0" ? price(l.clearing_price) : "sealed"} />
-        <Stat k="Sold / for sale" v={`${l.filled !== "0" ? whole(l.filled) : "–"} / ${whole(l.sale_supply)}`} />
-        <Stat k="Burned" v={l.burned_at_finalize !== "0" ? whole(l.burned_at_finalize) : "–"} />
+        <Stat k="Sold / for sale" v={`${l.clearing ? whole(l.filled) : "–"} / ${whole(l.sale_supply)}`} />
+        <Stat k="Burned (never minted)" v={l.clearing ? whole(l.burned_at_finalize) : "–"} />
       </div>
 
       {msg && (
@@ -113,7 +113,13 @@ function Launch() {
           </p>
         </div>
         <div className="panel">
-          {!accountId && <button onClick={signIn}>Connect wallet</button>}
+          {!accountId && (
+            <div>
+              <h3>Take part</h3>
+              <p className="note">Connect a NEAR testnet wallet to {l.phase === "Commit" ? "place a sealed bid" : l.phase === "Reveal" ? "reveal your bid" : l.phase === "Trading" ? "claim, trade, poke or defend" : "interact"}.</p>
+              <button onClick={signIn}>Connect wallet</button>
+            </div>
+          )}
           {accountId && l.phase === "Commit" && !bid && <CommitForm id={id} l={l} prices={prices} accountId={accountId} run={run} call={call} />}
           {accountId && l.phase === "Commit" && bid && <p>Your sealed bid is in. Deposit {near(bid.deposit)} NEAR. Keep your receipt for the reveal.</p>}
           {accountId && l.phase === "Reveal" && <RevealBox id={id} accountId={accountId} bid={bid} run={run} call={call} />}

@@ -1,11 +1,16 @@
 // REAL testnet launch: creator creates a launch, N throwaway wallets commit sealed bids, reveal,
 // anyone finalizes, everyone claims. Writes results/launch-<ts>.json with every tx link.
-// Usage: pnpm demo:launch   (after pnpm deploy:testnet)
+// Usage: pnpm demo:launch [--plan-only] [--resume <id>]   (after pnpm deploy:testnet)
+// Tunables (env): DEMO_BIDDERS, DEMO_BUDGET_NEAR (buying power per bidder), DEMO_TICKS (comma list,
+// cycled), DEMO_SNIPER_TICK, DEMO_OVERDEPOSIT_PCT, DEMO_PMIN_YOCTO or DEMO_MIN_POOL_NEAR (auto-pick
+// the highest p_min that still oversubscribes the sale and reaches that pool depth), DEMO_SYMBOL.
+// Before anything is sent, the TS model (parity-tested against the contract) predicts the outcome;
+// after finalize the on-chain result is compared with that prediction.
 import { randomBytes } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { KeyPair } from "near-api-js";
-import { commitHash } from "../sim/src/clearing.ts";
+import { commitHash, runAuction, tickPrices } from "../sim/src/clearing.ts";
 import { ENV, KEYS_DIR, account, call, events, fmtNear, need, sleep, view, waitForChainTime, writeResult, type TxResult } from "./lib.ts";
 
 const FACTORY = need("SLOWCOOK_FACTORY");
@@ -18,6 +23,53 @@ const STORAGE_FEE = 5n * 10n ** 21n; // 0.005 NEAR, refundable
 const run = Date.now().toString(36).slice(-5);
 const resumeIdx = process.argv.indexOf("--resume");
 const RESUME: string | null = resumeIdx > 0 ? process.argv[resumeIdx + 1] : null;
+const PLAN_ONLY = process.argv.includes("--plan-only");
+const YOCTO = 10n ** 24n;
+const toYocto = (near: string) => BigInt(Math.round(Number(near) * 1e6)) * 10n ** 18n;
+const BUDGET = toYocto(ENV.DEMO_BUDGET_NEAR ?? "0.3");
+const TICKS = (ENV.DEMO_TICKS ?? "4,5,6,7,8,9,10").split(",").map(Number);
+const SNIPER_TICK = Number(ENV.DEMO_SNIPER_TICK ?? 20);
+const OVER = BigInt(ENV.DEMO_OVERDEPOSIT_PCT ?? 20);
+const GAS_MARGIN = 8n * 10n ** 22n; // 0.08 NEAR per wallet for commit/reveal/claim/dump gas
+const FACTOR = 11_500n;
+const SALE_BPS = 6000n, LP_BPS = 3000n, TOTAL = 1_000_000n;
+
+/** Plan bids for a given p_min: (tick, qty, deposit) per wallet; wallet N-1 will not reveal. */
+function planBids(pMin: bigint) {
+  const prices = tickPrices(pMin, FACTOR);
+  return Array.from({ length: N }, (_, i) => {
+    const tick = i === 0 ? SNIPER_TICK : TICKS[(i - 1) % TICKS.length];
+    const price = prices[tick];
+    const qty = BUDGET / price;
+    return { i, tick, qty, deposit: (price * qty * (100n + OVER)) / 100n };
+  });
+}
+function predict(pMin: bigint) {
+  const bids = planBids(pMin);
+  const r = runAuction({
+    pMin, factorBps: FACTOR, totalSupply: TOTAL, saleBps: SALE_BPS, lpBps: LP_BPS,
+    bids: bids.slice(0, N - 1).map((b) => ({ bidder: `b${b.i}`, tick: b.tick, qty: b.qty, deposit: b.deposit })),
+  });
+  return { bids, r };
+}
+let P_MIN = BigInt(ENV.DEMO_PMIN_YOCTO ?? 10n ** 18n);
+if (ENV.DEMO_MIN_POOL_NEAR && !ENV.DEMO_PMIN_YOCTO) {
+  // Highest p_min on a 2% grid where the sale is still oversubscribed (demand >= supply).
+  let best: bigint | null = null;
+  for (let p = 10n ** 17n; p < 10n ** 22n; p = (p * 102n) / 100n) if (predict(p).r.clearing.kind === "Over") best = p;
+  if (!best) throw new Error("no p_min oversubscribes the sale with these budgets");
+  P_MIN = best;
+}
+const prediction = predict(P_MIN);
+const fundOf = (b: { deposit: bigint }) => b.deposit + STORAGE_FEE + GAS_MARGIN;
+const totalFunding = prediction.bids.reduce((s, b) => s + fundOf(b), 0n);
+console.log(`plan: ${N} wallets, budget ${fmtNear(BUDGET)} NEAR each, ticks ${TICKS.join("/")} (sniper ${SNIPER_TICK}), over-deposit ${OVER}%, p_min ${P_MIN} yocto`);
+console.log(`predicted (TS model): ${prediction.r.clearing.kind} at tick ${prediction.r.clearing.kind === "Over" ? (prediction.r.clearing as any).tick : 0}, clearing ${prediction.r.clearingPrice}, filled ${prediction.r.filled}, pool ${fmtNear(prediction.r.lpNear)} NEAR, treasury ${fmtNear(prediction.r.treasuryNear)} NEAR`);
+console.log(`funding needed from ${FUNDER}: ${fmtNear(totalFunding)} NEAR (+ creator deposit 2.1 NEAR from ${CREATOR})`);
+if (ENV.DEMO_MIN_POOL_NEAR && prediction.r.lpNear < toYocto(ENV.DEMO_MIN_POOL_NEAR)) {
+  throw new Error(`predicted pool ${fmtNear(prediction.r.lpNear)} NEAR < DEMO_MIN_POOL_NEAR ${ENV.DEMO_MIN_POOL_NEAR}; raise DEMO_BUDGET_NEAR`);
+}
+if (PLAN_ONLY) process.exit(0);
 
 const log: { step: string; ok: boolean; tx: string; note?: string }[] = [];
 function record(step: string, r: TxResult, note?: string) {
@@ -31,9 +83,9 @@ let launchId: string;
 let launch: any;
 let plan: { id: string; tick: number; qty: bigint; salt: string; deposit: bigint; hash: string }[];
 const args = {
-  name: "SlowCook Demo", symbol: "SLOW", icon: null,
-  total_supply: "1000000", sale_bps: 6000, lp_bps: 3000, creator_bps: 1000,
-  p_min: (10n ** 18n).toString(), // 1e-6 NEAR per token
+  name: ENV.DEMO_NAME ?? "SlowCook Demo", symbol: ENV.DEMO_SYMBOL ?? "SLOW", icon: null,
+  total_supply: TOTAL.toString(), sale_bps: Number(SALE_BPS), lp_bps: Number(LP_BPS), creator_bps: 1000,
+  p_min: P_MIN.toString(),
   commit_secs: COMMIT, reveal_secs: REVEAL,
   k_obs: 3, h_obs: 6, r_bps: 1000, epoch_secs: 120, poke_interval_secs: 10, penalty_bps: 500,
 };
@@ -48,12 +100,12 @@ console.log(`\n== 1. creating ${N} bidder wallets under ${FUNDER}`);
 for (let i = 0; i < N; i++) {
   const id = `b${i}-${run}.${FUNDER}`;
   const kp = KeyPair.fromRandom("ed25519");
-  const r: any = await funder.createSubAccount({ accountOrPrefix: id, publicKey: kp.getPublicKey(), nearToTransfer: 45n * 10n ** 22n });
+  const r: any = await funder.createSubAccount({ accountOrPrefix: id, publicKey: kp.getPublicKey(), nearToTransfer: fundOf(prediction.bids[i]) });
   writeKey(id, kp);
   bidders.push(id);
   log.push({ step: `create wallet ${id}`, ok: true, tx: `https://testnet.nearblocks.io/txns/${r.transaction.hash}` });
 }
-console.log(`   ${bidders.length} wallets funded with 0.45 NEAR each`);
+console.log(`   ${bidders.length} wallets funded (deposit + 0.005 storage fee + 0.08 gas each), ${fmtNear(totalFunding)} NEAR total`);
 
 function writeKey(id: string, kp: KeyPair) {
   mkdirSync(KEYS_DIR, { recursive: true });
@@ -72,15 +124,13 @@ console.log(`   launch ${launchId}: token ${launch.token_id}, phase ${launch.pha
 const prices: string[] = await view(FACTORY, "get_tick_prices", { id: launchId });
 
 // 3. Sealed bids. A spread of limits; one "sniper" bids ~5x above everyone else; one wallet will not reveal;
-//    one tries a wrong salt first. Deposits are 20% above cost so the deposit doesn't reveal the bid.
+//    one tries a wrong salt first. Deposits are OVER% above cost so the deposit doesn't reveal the bid.
 console.log(`\n== 3. ${N} sealed commits (only hashes go on-chain)`);
+if (prices.some((p, i) => BigInt(p) !== tickPrices(P_MIN, FACTOR)[i])) throw new Error("on-chain tick prices differ from the plan");
 plan = bidders.map((id, i) => {
-  const tick = i === 0 ? 20 : 4 + (i % 7); // bidder 0 = "sniper" bids far above everyone
-  const budget = 3n * 10n ** 23n; // 0.3 NEAR of buying power each
-  const price = BigInt(prices[tick]);
-  const qty = budget / price;
+  const { tick, qty, deposit } = prediction.bids[i]; // bidder 0 = "sniper" bids far above everyone
   const salt = randomBytes(32).toString("hex");
-  return { id, tick, qty, salt, deposit: (price * qty * 12n) / 10n, hash: commitHash(launchId, id, tick, qty, salt) };
+  return { id, tick, qty, salt, deposit, hash: commitHash(launchId, id, tick, qty, salt) };
 });
 mkdirSync(KEYS_DIR, { recursive: true });
 writeFileSync(join(KEYS_DIR, `receipts-launch-${launchId}.json`), JSON.stringify(plan, (_, v) => (typeof v === "bigint" ? v.toString() : v), 2));
@@ -93,8 +143,10 @@ await Promise.all(
 const bid0 = await view(FACTORY, "get_bid", { launch_id: launchId, account_id: plan[1].id });
 console.log(`   on-chain bid record exposes: tick=${bid0.tick} qty=${bid0.qty} deposit=${fmtNear(bid0.deposit)} (price hidden)`);
 
-// 4. Reveal.
+}
 launch = await view(FACTORY, "get_launch", { id: launchId });
+if (launch.phase === "Commit" || launch.phase === "Reveal") {
+// 4. Reveal.
 console.log(`\n== 4. reveal`);
 await waitForChainTime(Number(launch.commit_end_ms) + 1500, "reveal window");
 console.log("");
@@ -144,15 +196,23 @@ const finalLaunch = await view(FACTORY, "get_launch", { id: launchId });
 const pool = await view(FACTORY, "get_pool", { launch_id: launchId });
 const treasury = await view(FACTORY, "get_treasury", { launch_id: launchId });
 const supply = await view(finalLaunch.token_id, "ft_total_supply");
+const matches = {
+  clearing_price: BigInt(finalLaunch.clearing_price) === prediction.r.clearingPrice,
+  filled: BigInt(finalLaunch.filled) === prediction.r.filled,
+  pool_near: BigInt(pool.pool.near_reserve) === prediction.r.lpNear,
+};
 const uniform = claims.filter((c) => c.filled && c.filled !== "0").every((c) => BigInt(c.paid) === BigInt(finalLaunch.clearing_price) * BigInt(c.filled));
 const path = writeResult(`launch-${launchId}`, {
   label: "REAL testnet run (test NEAR, no real value)",
   factory: FACTORY, launch_id: launchId, token: finalLaunch.token_id, args, buckets,
   clearing_price_yocto: finalLaunch.clearing_price, filled: finalLaunch.filled, burned: finalLaunch.burned_at_finalize,
   token_total_supply: supply, pool: pool.pool, spot_price: pool.spot_price, treasury_near: treasury.treasury.near_balance,
-  every_winner_paid_clearing_price: uniform, sniper_bidder: plan[0].id, claims, steps: log,
+  every_winner_paid_clearing_price: uniform, sniper_bidder: plan[0].id,
+  prediction: { model: "sim/src/clearing.ts (parity-tested)", clearing_price: prediction.r.clearingPrice, filled: prediction.r.filled, pool_near: prediction.r.lpNear, treasury_near: prediction.r.treasuryNear },
+  onchain_matches_prediction: matches, claims, steps: log,
 });
 console.log(`\nEvery winner paid the same price per token: ${uniform}`);
+console.log(`On-chain result matches the TS prediction made before launch: ${JSON.stringify(matches)}`);
 console.log(`Sniper (${plan[0].id}) bid tick ${plan[0].tick} and paid: ${claims[0]?.paid ? fmtNear(claims[0].paid) : "?"} NEAR for ${claims[0]?.filled} tokens`);
 console.log(`Pool opened at ${pool.spot_price} yocto/token (clearing ${finalLaunch.clearing_price}); treasury ${fmtNear(treasury.treasury.near_balance)} NEAR`);
 console.log(`\nwrote ${path}\nnext: pnpm demo:dump ${launchId}`);

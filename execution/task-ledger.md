@@ -18,7 +18,7 @@
 | 8 | Simulator, 1000 seeds | done | `sim/README.md`, `results/sim-*-SIMULATED.*` |
 | 9 | Sandbox integration tests (real wasm) | done: 4/4 pass | `verification/test-report.md` §2 |
 | 10 | Testnet deploy + demo:launch + demo:dump | done | `results/*.json`, test report §3 |
-| 11 | Web app (Next.js static export + near-connect) | built + smoke-tested; wallet flow NOT browser-tested | `apps/web`, test report §6 |
+| 11 | Web app (Next.js static export + near-connect) | built; headless check 6/6 clean locally; hosted check + real wallet signing pending | `apps/web`, test report §6 |
 | 12 | README, docs, submission package | done (human fields pending) | `README.md`, `submission/` |
 | 13 | Hosting (Vercel), video, X post, form submission | **needs human** | `submission/` |
 
@@ -42,3 +42,24 @@ About 126 hours remain to the deadline.
    - a second live launch with deeper liquidity, using a fresh faucet account;
    - a poke-bounty keeper;
    - the fresh-clone test on a truly clean machine (a fresh-clone test with a shared build cache passed on 2026-11-10; see test report §7).
+
+## Status at 2026-11-12 ~07:35 UTC
+
+About 64 hours remain to the deadline.
+
+**Done today**
+- **Launch 1 (deep pool)** on testnet: a 5.858 NEAR pool. The on-chain result equals the pre-launch TS prediction.
+- **Dump/defend on launch 1**: `defend` capped at exactly 10%, then `E_EPOCH_CAP`, then the creator unlock.
+- **Headless-browser check** (`scripts/check-web.ts`): 6/6 pages clean on the local build. Visual review found and fixed 5 presentation bugs.
+- **README:** the related-projects section (Q-015), with Partner A's other entry still to be confirmed, and the launch 1 evidence table.
+- **Video script:** updated to launch 1's numbers.
+- **`scripts/set-repo-url.sh`** fills the repo links, adds the CI badge and sets `origin`.
+
+**Blocked on the human**
+1. **Repo URL.** The instruction contained the literal placeholder `<Partner A's repo URL>`. Next steps once it arrives:
+   - `bash scripts/set-repo-url.sh <url>`;
+   - commit, then `git push -u origin main && git push origin hackathon-submission`;
+   - watch CI.
+2. **Hosted URL**, so the browser check can run against it: `node scripts/check-web.ts <url>`.
+3. **Partner A's other NEAR HACKATHON entry** (or "none") for the README table.
+4. **Submission form fields**, then the human's "yes".

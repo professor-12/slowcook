@@ -36,7 +36,10 @@ export function renderChart(summary: Record<string, Record<string, Band>>, seeds
   let s = `<svg xmlns="http://www.w3.org/2000/svg" width="880" height="360" viewBox="0 0 880 360" font-family="Inter,Segoe UI,Arial,sans-serif">`;
   s += `<rect width="880" height="360" fill="${C.bg}"/>`;
   s += panel(0, "Insider share of supply (bots + bundler)", "insiderShare", summary, 0, 1, pct);
-  s += panel(440, "Insider ROI after dumping at T+1", "insiderRoi", summary, -0.5, Math.ceil(roiHi), pct);
+  // Round axis: from -200% up in 4 equal whole-hundred steps that cover the largest p95.
+  const roiLo = -2;
+  const roiTop = roiLo + 4 * Math.ceil((roiHi - roiLo) / 4);
+  s += panel(440, "Insider ROI after dumping at T+1", "insiderRoi", summary, roiLo, roiTop, pct);
   MECHS.forEach(([, label, color], i) => {
     s += `<rect x="${56 + i * 250}" y="${306}" width="12" height="12" fill="${color}"/><text x="${74 + i * 250}" y="${317}" fill="${C.fg}" font-size="12">${label}</text>`;
   });
