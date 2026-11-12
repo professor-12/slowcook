@@ -191,29 +191,27 @@ DEMO_BUDGET_NEAR=1.3 DEMO_TICKS=6,7,8 DEMO_OVERDEPOSIT_PCT=10 DEMO_MIN_POOL_NEAR
 
 ## 6. Web app
 
-- **Build:** `pnpm -C apps/web build` (Next 16.4.5, static export) produces 5 routes: `/`, `/create`, `/launch`, `/why`, `/_not-found`.
-- **Headless-browser check** (2026-11-12): `node scripts/check-web.ts http://127.0.0.1:8765`, using Chromium headless-shell 1248 via `playwright-core` 1.65.0, against `apps/web/out` served locally.
-  - It fails on any console error, uncaught page error, failed same-origin request or missing content.
-  - Pages checked:
-    - `/`: hero text, the launch list read from testnet, and the wallet selector opening;
-    - `/create/`;
-    - `/launch/?id=0` and `/launch/?id=1`: launch data, histogram bars, clearing price, Floor Keeper panel;
-    - `/why/`: simulation table and chart image;
-    - a 404 page.
-  - **Result: 6/6 clean.** Screenshots are in `verification/web-check/`; the report is in `results/web-check-*.json`.
-  - Two filters added after the first run, which flagged only browser noise:
-    - `net::ERR_ABORTED` (Next.js link prefetches cancelled when the page closes);
-    - the deliberate 404 page's own 404 console line.
-- **Visual review of the screenshots found 5 presentation bugs, all fixed and re-checked:**
-  1. Overlapping x-axis labels next to the clearing tick.
-  2. The clearing-price label overlapping the chart caption.
-  3. "Burned" showing "–" instead of 0 after finalize.
-  4. An empty action panel when no wallet is connected.
-  5. Odd tick values on the simulation chart's ROI axis (now −200/0/200/400/600%).
-- **Machine note.** This machine lacks `libnss3`. The check ran with NSS libraries extracted from `apt-get download libnss3 libnspr4` (no root), passed via `CHROMIUM_LIBS`.
-- **Not done:**
-  - **The check against a hosted URL**: nothing is hosted yet. Re-run with `node scripts/check-web.ts <hosted-url>` once it is.
-  - **Signing a transaction with a real wallet.** The check only proves the selector opens.
+**Redesign (2026-11-12).** The app was rebuilt to the owner's design standard (fintech pack): tokens, typed copy, accessibility, motion level 2, and dataviz-spec charts. Full report: [`docs/design/qa-report.md`](../docs/design/qa-report.md).
+
+**Headless QA:** `node scripts/serve-web.ts 8765`, then `node scripts/check-web.ts http://127.0.0.1:8765`.
+- **Pages:** home, create, launch 0, launch 1, why and 404.
+- **Content:** all pages pass, and the wallet selector opens.
+- **axe-core 4.14 (WCAG 2.2 AA tags):** **0 violations** on every page.
+- **Controls under 24px:** 0.
+- **Matrix:** **72 of 72** page × width (320/375/768/1024/1440/1920) × motion (normal/reduced) runs have no console or page errors and no horizontal overflow.
+- Report: `results/web-check-2026-11-12T08-39-12-309Z.json`. Screenshots: `verification/web-check/` (1440 and 375).
+
+**Lighthouse 13.6** (mobile defaults): `node scripts/lighthouse.ts`, report `results/lighthouse-2026-11-12T08-40-18-686Z.json`.
+- **Accessibility, best practices, SEO:** 100 on all four pages.
+- **Performance:**
+  - home 91–99, create 81–100 and why 74–88, depending on machine load (CPU benchmark 482–1495 across runs);
+  - **launch 61–79**, with LCP of about 5.5 s, because the page renders live chain data after hydration in a static export.
+- **CLS:** 0 on all pages.
+
+**Not tested:**
+- a hosted URL (nothing is hosted yet);
+- signing with a real wallet;
+- a screen reader.
 
 ## 7. Fresh-clone test (2026-11-10)
 

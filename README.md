@@ -168,6 +168,19 @@ pnpm -C apps/web build && npx serve apps/web/out   # or: pnpm dev:web
 
 Hosted demo: **not deployed yet** (needs the team's Vercel/static host). Until then, use the local path above plus the demo video.
 
+## Frontend
+
+`apps/web` is built to a written design standard ([`AGENTS.md`](AGENTS.md), [`docs/design/`](docs/design/)) using its fintech pack:
+- **Tokens:** every colour, size, space and duration is a token.
+- **Copy:** typed and sourced; every on-page number links back to a results file.
+- **Accessibility:** WCAG 2.2 AA; axe finds 0 violations and Lighthouse accessibility is 100.
+- **Charts:** follow a dataviz spec, with a validated palette, legends, tooltips and table views.
+
+**Check it:**
+- `node scripts/serve-web.ts 8765`, then `node scripts/check-web.ts http://127.0.0.1:8765` runs the QA matrix: 6 pages × 6 widths × 2 motion modes, axe, and touch-target sizes.
+- `node scripts/lighthouse.ts` runs Lighthouse.
+- Results and open items: [`docs/design/qa-report.md`](docs/design/qa-report.md).
+
 ## NEAR features used
 
 - **NEP-141 / NEP-145 / NEP-148** fungible token per launch, built on `near-contract-standards` 5.30.1.

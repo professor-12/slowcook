@@ -1,76 +1,106 @@
-"use client";
-import { useEffect, useState } from "react";
+import { why } from "@/content/site";
+import sim from "@/content/sim-summary.json";
+import { SimChart, type Band } from "@/components/SimChart";
+import { MECHANISMS } from "@/content/mechanisms";
 
-type Band = { median: number; p5: number; p95: number };
 const ROWS: [string, string, "pct" | "near" | "x"][] = [
-  ["Insider share of supply (bots + bundler)", "insiderShare", "pct"],
+  ["Insider share of supply (bots and bundler)", "insiderShare", "pct"],
   ["Bundler share", "bundlerShare", "pct"],
-  ["Insider ROI after dumping at T+1", "insiderRoi", "pct"],
+  ["Insider return after dumping at T+1", "insiderRoi", "pct"],
   ["Insider profit (NEAR)", "insiderPnl", "near"],
-  ["Retail aggregate PnL (NEAR)", "retailPnl", "near"],
-  ["Median retail ROI", "retailRoiMedian", "pct"],
+  ["Retail aggregate profit or loss (NEAR)", "retailPnl", "near"],
+  ["Median retail return", "retailRoiMedian", "pct"],
   ["Price drop caused by the dump", "priceDropPct", "pct"],
 ];
 
+const fmt = (v: number, kind: string) => (kind === "pct" ? `${(v * 100).toFixed(1)}%` : v.toFixed(2));
+
+// Static data (results/sim-summary-SIMULATED.json, copied at build): prerendered, no fetch, no layout shift.
 export default function Why() {
-  const [s, setS] = useState<any>(null);
-  useEffect(() => {
-    fetch("/sim-summary.json").then((r) => r.json()).then(setS).catch(() => {});
-  }, []);
-  const f = (b: Band | undefined, kind: string) => {
-    if (!b) return "–";
-    const one = (v: number) => (kind === "pct" ? `${(v * 100).toFixed(1)}%` : v.toFixed(2));
-    return (
-      <>
-        <b>{one(b.median)}</b> <span className="note">({one(b.p5)} to {one(b.p95)})</span>
-      </>
-    );
-  };
+  const s: any = sim;
   return (
-    <main>
-      <h1>Why SlowCook</h1>
-      <p className="lead">
-        On a bonding curve the price rises with every buy, so the first buyer pays the least. That subsidy is what sniper bots and bundlers
-        harvest. In a uniform-price sealed auction there is no first: everyone who wins pays the same price.
-      </p>
-      <div className="panel" style={{ margin: "16px 0" }}>
-        <h3>SIMULATED · same 200 wallets through both mechanisms · {s?.seeds ?? "…"} seeds</h3>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/sim-chart.svg" alt="Simulated insider share and ROI: bonding curve vs SlowCook" style={{ width: "100%", borderRadius: 8 }} />
+    <div className="container container-wide section stack-4" style={{ gap: "var(--space-12)" }}>
+      <div className="page-head" style={{ marginBottom: 0 }}>
+        <p className="eyebrow">{why.eyebrow}</p>
+        <h1>{why.title}</h1>
+        <p className="lead">{why.lead}</p>
       </div>
+
+      <section className="card stack-4" aria-labelledby="chart-title">
+        <h2 id="chart-title" className="card-title">
+          {why.chartTitle}
+          {s ? `, ${s.seeds.toLocaleString()} runs` : ""}
+        </h2>
+        <SimChart summary={s.summary} />
+        <p className="small muted">{why.chartNote}</p>
+      </section>
+
       {s && (
-        <div className="panel" style={{ overflowX: "auto" }}>
-          <table>
-            <thead>
-              <tr><th>median (p5 to p95)</th><th>Bonding curve</th><th>SlowCook</th><th>SlowCook, shaded bids</th></tr>
-            </thead>
-            <tbody>
-              {ROWS.map(([label, key, kind]) => (
-                <tr key={key}>
-                  <td>{label}</td>
-                  <td>{f(s.summary.bondingCurve[key], kind)}</td>
-                  <td>{f(s.summary.slowcook[key], kind)}</td>
-                  <td>{f(s.summary.slowcookShaded[key], kind)}</td>
+        <section aria-labelledby="table-title" className="stack-4">
+          <h2 id="table-title">All results</h2>
+          <div className="table-wrap">
+            <table>
+              <caption className="visually-hidden">SIMULATED results, median with 5th to 95th percentile in brackets</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Median (5th to 95th percentile)</th>
+                  {MECHANISMS.map((m) => (
+                    <th key={m.key} scope="col" className="num">
+                      {m.label}
+                    </th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          <p className="note">
-            {s.label} Insiders in SlowCook get the strongest strategy we could build: they know all retail demand and bid one tick above the
-            clearing price retail alone would set. Full method: sim/README.md.
+              </thead>
+              <tbody>
+                {ROWS.map(([label, key, kind]) => (
+                  <tr key={key}>
+                    <th scope="row" style={{ background: "transparent", fontWeight: 400, color: "var(--foreground)" }}>
+                      {label}
+                    </th>
+                    {MECHANISMS.map((m) => {
+                      const b: Band | undefined = s.summary[m.key][key];
+                      return (
+                        <td key={m.key} className="num">
+                          {b ? (
+                            <>
+                              <strong>{fmt(b.median, kind)}</strong>{" "}
+                              <span className="muted">
+                                ({fmt(b.p5, kind)} to {fmt(b.p95, kind)})
+                              </span>
+                            </>
+                          ) : (
+                            "–"
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="small">
+            <a href={why.method.href} rel="noopener noreferrer">
+              {why.method.label}
+            </a>
           </p>
-        </div>
+        </section>
       )}
-      <div className="grid" style={{ marginTop: 16 }}>
-        <div className="panel">
-          <h3>What it fixes</h3>
-          <p>Being first, splitting into 20 wallets, or bidding 5× higher buys no better price. Unsold supply burns instead of flooding the pool. The creator&apos;s tokens unlock only after the price holds.</p>
-        </div>
-        <div className="panel">
-          <h3>What it doesn&apos;t</h3>
-          <p>Deposits are public (they cap a bid, they don&apos;t reveal it). One person can still use many wallets. The treasury slows a sell-off; it can&apos;t stop one. Not revealing is an option priced by a 5% penalty.</p>
-        </div>
+
+      <div className="two-col">
+        <section className="card stack-2" aria-labelledby="fixes-title">
+          <h2 id="fixes-title" className="card-title">
+            {why.fixes.title}
+          </h2>
+          <p>{why.fixes.body}</p>
+        </section>
+        <section className="card stack-2" aria-labelledby="limits-title">
+          <h2 id="limits-title" className="card-title">
+            {why.limits.title}
+          </h2>
+          <p>{why.limits.body}</p>
+        </section>
       </div>
-    </main>
+    </div>
   );
 }

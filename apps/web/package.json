@@ -7,11 +7,12 @@
     "build": "next build",
     "start": "npx serve out",
     "typecheck": "tsc --noEmit",
-    "prebuild": "cp ../../results/sim-summary-SIMULATED.json public/sim-summary.json && cp ../../results/sim-chart-SIMULATED.svg public/sim-chart.svg",
-    "predev": "cp ../../results/sim-summary-SIMULATED.json public/sim-summary.json && cp ../../results/sim-chart-SIMULATED.svg public/sim-chart.svg"
+    "prebuild": "cp ../../results/sim-summary-SIMULATED.json content/sim-summary.json",
+    "predev": "cp ../../results/sim-summary-SIMULATED.json content/sim-summary.json"
   },
   "dependencies": {
     "@hot-labs/near-connect": "0.12.0",
+    "lucide-react": "1.72.0",
     "next": "16.4.5",
     "react": "19.3.1",
     "react-dom": "19.3.1"

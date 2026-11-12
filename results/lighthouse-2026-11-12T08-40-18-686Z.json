@@ -1,0 +1,120 @@
+{
+  "base": "http://127.0.0.1:8765",
+  "mode": "mobile, simulated throttling (Lighthouse defaults)",
+  "ranAt": "2026-11-12T08:40:18.686Z",
+  "pages": [
+    {
+      "page": "/",
+      "benchmarkIndex": 723.5,
+      "scores": {
+        "performance": 91,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "lcp": "1.1 s",
+      "tbt": "370 ms",
+      "cls": "0",
+      "fcp": "1.1 s",
+      "below_0_9": [
+        "total-blocking-time (0.71)",
+        "max-potential-fid (0.18)",
+        "interactive (0.66)",
+        "mainthread-work-breakdown (0)",
+        "bootup-time (0)",
+        "unused-javascript (0.5)",
+        "cache-insight (0.5)",
+        "document-latency-insight (0.5)",
+        "forced-reflow-insight (0)",
+        "legacy-javascript-insight (0.5)",
+        "network-dependency-tree-insight (0)",
+        "render-blocking-insight (0)"
+      ]
+    },
+    {
+      "page": "/launch/?id=1",
+      "benchmarkIndex": 740,
+      "scores": {
+        "performance": 61,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "lcp": "5.7 s",
+      "tbt": "740 ms",
+      "cls": "0",
+      "fcp": "0.9 s",
+      "below_0_9": [
+        "largest-contentful-paint (0.17)",
+        "total-blocking-time (0.4)",
+        "max-potential-fid (0.46)",
+        "interactive (0.64)",
+        "mainthread-work-breakdown (0)",
+        "bootup-time (0)",
+        "unused-javascript (0)",
+        "cache-insight (0)",
+        "document-latency-insight (0.5)",
+        "legacy-javascript-insight (0)",
+        "network-dependency-tree-insight (0)",
+        "render-blocking-insight (0)"
+      ]
+    },
+    {
+      "page": "/why/",
+      "benchmarkIndex": 576.5,
+      "scores": {
+        "performance": 74,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "lcp": "0.9 s",
+      "tbt": "1,610 ms",
+      "cls": "0",
+      "fcp": "0.9 s",
+      "below_0_9": [
+        "total-blocking-time (0.12)",
+        "max-potential-fid (0.04)",
+        "interactive (0.7)",
+        "mainthread-work-breakdown (0)",
+        "bootup-time (0)",
+        "unused-css-rules (0.5)",
+        "unused-javascript (0.5)",
+        "cache-insight (0.5)",
+        "document-latency-insight (0.5)",
+        "forced-reflow-insight (0)",
+        "legacy-javascript-insight (0.5)",
+        "network-dependency-tree-insight (0)",
+        "render-blocking-insight (0)"
+      ]
+    },
+    {
+      "page": "/create/",
+      "benchmarkIndex": 481.5,
+      "scores": {
+        "performance": 81,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "lcp": "0.9 s",
+      "tbt": "800 ms",
+      "cls": "0",
+      "fcp": "0.9 s",
+      "below_0_9": [
+        "total-blocking-time (0.36)",
+        "max-potential-fid (0.04)",
+        "interactive (0.71)",
+        "mainthread-work-breakdown (0)",
+        "bootup-time (0)",
+        "unused-css-rules (0.5)",
+        "unused-javascript (0.5)",
+        "cache-insight (0.5)",
+        "document-latency-insight (0.5)",
+        "legacy-javascript-insight (0.5)",
+        "network-dependency-tree-insight (0)",
+        "render-blocking-insight (0)"
+      ]
+    }
+  ]
+}

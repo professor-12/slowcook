@@ -12,5 +12,3 @@ sim/out/runs.csv
 .demo-keys/
 apps/web/out/
 *.tsbuildinfo
-apps/web/public/sim-summary.json
-apps/web/public/sim-chart.svg

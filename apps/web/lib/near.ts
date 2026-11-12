@@ -58,13 +58,14 @@ export function near(yocto: bigint | string | number | undefined, dp = 4): strin
   return dp ? `${whole}.${frac}` : whole.toString();
 }
 
-/** Price in yocto per whole token -> NEAR per token, compact. */
+/** Price in yocto per whole token -> NEAR per token, 3 significant digits, no exponent ("0.0000195"). */
+const sig3 = new Intl.NumberFormat("en", { maximumSignificantDigits: 3 });
 export function price(yocto: bigint | string | undefined): string {
   if (yocto === undefined) return "–";
   const n = Number(BigInt(yocto)) / 1e24;
-  if (n === 0) return "0";
-  return n < 0.001 ? n.toExponential(3) : n.toPrecision(4);
+  return n === 0 ? "0" : sig3.format(n);
 }
+export const fmtPrice = price;
 
 export function tokens(base: bigint | string | undefined): string {
   if (base === undefined) return "–";
@@ -99,3 +100,15 @@ export interface Receipt {
 }
 
 export const receiptKey = (launchId: string, bidder: string) => `slowcook:receipt:${FACTORY}:${launchId}:${bidder}`;
+
+/** Consume the get_launch request started by app/launch/layout.tsx during HTML parse (once). */
+export function takeEarlyLaunch(id: string): Promise<any> | null {
+  const w = globalThis as { __slowcookEarly?: { id: string; p: Promise<any> } };
+  const early = w.__slowcookEarly;
+  if (!early || early.id !== id) return null;
+  delete w.__slowcookEarly;
+  return early.p.then((j) => {
+    if (j.error || j.result?.error) throw new Error(JSON.stringify(j.error ?? j.result.error));
+    return JSON.parse(new TextDecoder().decode(new Uint8Array(j.result.result)));
+  });
+}

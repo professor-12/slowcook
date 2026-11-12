@@ -1,6 +1,7 @@
 "use client";
-// Wallet context on @hot-labs/near-connect (testnet). Exposes the signed-in account and a single
-// `call` helper that sends one FunctionCall and returns the transaction hash.
+// Wallet context on @hot-labs/near-connect (testnet). The connector (~94 KB of JS plus a wallet
+// manifest fetch) loads only when needed: on "Connect wallet", on the first transaction, or after
+// idle when this browser connected before (to restore the session). Visitors who only read pay nothing.
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { NETWORK } from "./near";
 
@@ -12,54 +13,80 @@ interface WalletCtx {
   call: (receiverId: string, method: string, args: object, deposit?: bigint, tgas?: number) => Promise<{ hash?: string; result?: unknown }>;
 }
 const Ctx = createContext<WalletCtx | null>(null);
+const FLAG = "slowcook:wallet-connected";
+const remember = (on: boolean) => {
+  try {
+    on ? localStorage.setItem(FLAG, "1") : localStorage.removeItem(FLAG);
+  } catch {}
+};
 
 export function WalletProvider({ children }: { children: ReactNode }) {
-  const connector = useRef<Connector | null>(null);
+  const connector = useRef<Promise<Connector> | null>(null);
   const [accountId, setAccountId] = useState<string | null>(null);
 
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      const { NearConnector } = await import("@hot-labs/near-connect");
-      const c = new NearConnector({ network: NETWORK, features: { testnet: true }, footerBranding: null });
-      connector.current = c;
-      c.on("wallet:signIn", (t) => alive && setAccountId(t.accounts[0]?.accountId ?? null));
-      c.on("wallet:signOut", () => alive && setAccountId(null));
-      try {
-        const { accounts } = await c.getConnectedWallet();
-        if (alive) setAccountId(accounts[0]?.accountId ?? null);
-      } catch {}
-    })();
-    return () => {
-      alive = false;
-    };
+  const ensure = useCallback(() => {
+    if (!connector.current) {
+      connector.current = import("@hot-labs/near-connect").then(({ NearConnector }) => {
+        const c = new NearConnector({ network: NETWORK, features: { testnet: true }, footerBranding: null });
+        c.on("wallet:signIn", (t) => {
+          setAccountId(t.accounts[0]?.accountId ?? null);
+          remember(true);
+        });
+        c.on("wallet:signOut", () => {
+          setAccountId(null);
+          remember(false);
+        });
+        return c;
+      });
+    }
+    return connector.current;
   }, []);
 
-  const signIn = useCallback(async () => {
-    await connector.current?.connect();
-  }, []);
-  const signOut = useCallback(async () => {
-    await connector.current?.disconnect();
-    setAccountId(null);
-  }, []);
-  const call = useCallback(async (receiverId: string, method: string, args: object, deposit = 0n, tgas = 100) => {
-    if (!connector.current) throw new Error("wallet not ready");
-    const wallet = await connector.current.wallet();
-    const out: any = await wallet.signAndSendTransaction({
-      receiverId,
-      actions: [{ type: "FunctionCall", params: { methodName: method, args, gas: (BigInt(tgas) * 10n ** 12n).toString(), deposit: deposit.toString() } }],
-    });
-    const failure = out?.status?.Failure;
-    if (failure) throw new Error(JSON.stringify(failure));
-    let result: unknown;
-    const b64 = out?.status?.SuccessValue;
-    if (b64) {
+  useEffect(() => {
+    let wasConnected = false;
+    try {
+      wasConnected = localStorage.getItem(FLAG) === "1";
+    } catch {}
+    if (!wasConnected) return;
+    const restore = async () => {
       try {
-        result = JSON.parse(atob(b64));
+        const { accounts } = await (await ensure()).getConnectedWallet();
+        setAccountId(accounts[0]?.accountId ?? null);
       } catch {}
-    }
-    return { hash: out?.transaction?.hash ?? out?.transaction_outcome?.id, result };
-  }, []);
+    };
+    const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number };
+    if (w.requestIdleCallback) w.requestIdleCallback(restore, { timeout: 3000 });
+    else setTimeout(restore, 1500);
+  }, [ensure]);
+
+  const signIn = useCallback(async () => {
+    await (await ensure()).connect();
+  }, [ensure]);
+  const signOut = useCallback(async () => {
+    await (await ensure()).disconnect();
+    setAccountId(null);
+    remember(false);
+  }, [ensure]);
+  const call = useCallback(
+    async (receiverId: string, method: string, args: object, deposit = 0n, tgas = 100) => {
+      const wallet = await (await ensure()).wallet();
+      const out: any = await wallet.signAndSendTransaction({
+        receiverId,
+        actions: [{ type: "FunctionCall", params: { methodName: method, args, gas: (BigInt(tgas) * 10n ** 12n).toString(), deposit: deposit.toString() } }],
+      });
+      const failure = out?.status?.Failure;
+      if (failure) throw new Error(JSON.stringify(failure));
+      let result: unknown;
+      const b64 = out?.status?.SuccessValue;
+      if (b64) {
+        try {
+          result = JSON.parse(atob(b64));
+        } catch {}
+      }
+      return { hash: out?.transaction?.hash ?? out?.transaction_outcome?.id, result };
+    },
+    [ensure],
+  );
 
   return <Ctx.Provider value={{ accountId, signIn, signOut, call }}>{children}</Ctx.Provider>;
 }

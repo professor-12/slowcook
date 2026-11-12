@@ -63,3 +63,14 @@ About 64 hours remain to the deadline.
 2. **Hosted URL**, so the browser check can run against it: `node scripts/check-web.ts <url>`.
 3. **Partner A's other NEAR HACKATHON entry** (or "none") for the README table.
 4. **Submission form fields**, then the human's "yes".
+
+## UI redesign to the owner's design standard (2026-11-12)
+- **Done:**
+  - fintech pack applied to `apps/web`;
+  - `AGENTS.md` and `docs/design/` saved (core files plus the fintech pack, with the PRD and reference sheet filled in);
+  - QA: axe 0 violations, matrix 72/72, Lighthouse accessibility and SEO 100.
+- **Open:**
+  - Lighthouse performance below 90 on launch (structural: about 5.5 s LCP), and on why and create under machine load;
+  - home JS is 182 KB against the 180 KB budget;
+  - screen reader, manual keyboard walk-through, real-wallet signing;
+  - canonical and sitemap once the hosted URL is known.

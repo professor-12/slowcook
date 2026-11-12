@@ -11,7 +11,7 @@ if [[ ! "$url" =~ ^https://github\.com/([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+)$ ]]; 
   echo "usage: $0 https://github.com/<owner>/<repo>" >&2
   exit 1
 fi
-sed -i "s#https://github.com/REPLACE_ME/slowcook#${url}#g" Cargo.toml apps/web/app/layout.tsx
+sed -i "s#https://github.com/REPLACE_ME/slowcook#${url}#g" Cargo.toml apps/web/content/site.ts apps/web/app/layout.tsx
 badge="[![CI](${url}/actions/workflows/ci.yml/badge.svg)](${url}/actions/workflows/ci.yml)"
 if ! grep -qF "actions/workflows/ci.yml/badge.svg" README.md; then
   # Insert the badge right under the title line.
@@ -25,5 +25,5 @@ else
   git remote add origin "$remote"
 fi
 echo "repo URL set to ${url}; remaining REPLACE_ME:"
-grep -rn "REPLACE_ME" Cargo.toml apps/web/app README.md || echo "  none"
+grep -rn "REPLACE_ME" Cargo.toml apps/web/app apps/web/content README.md || echo "  none"
 git remote -v

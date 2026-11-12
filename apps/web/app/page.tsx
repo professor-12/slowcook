@@ -1,67 +1,180 @@
-"use client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { FACTORY, price, view, whole } from "@/lib/near";
+import { ArrowRight, ExternalLink, FileCheck2, ShieldAlert, ScrollText } from "lucide-react";
+import { home } from "@/content/site";
+import { Reveal } from "@/components/Reveal";
+import { LaunchList } from "@/components/LaunchList";
+import { HeroCard } from "@/components/HeroCard";
 
-const PHASE_CLASS: Record<string, string> = { Commit: "live", Reveal: "warn", Trading: "live", Failed: "bad" };
+const TRUST_ICONS = [ScrollText, FileCheck2, ShieldAlert];
 
 export default function Home() {
-  const [launches, setLaunches] = useState<any[] | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-  useEffect(() => {
-    const load = () =>
-      view<any[]>(FACTORY, "list_launches", { from: "0", limit: 100 })
-        .then((l) => setLaunches([...l].reverse()))
-        .catch((e) => setErr(String(e)));
-    load();
-    const t = setInterval(load, 5000);
-    return () => clearInterval(t);
-  }, []);
+  const { hero, proof, steps, values, launches, trust, faq, final } = home;
+  const faqLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faq.items.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+  };
   return (
-    <main>
-      <h1>Memecoin launches where being first is worthless.</h1>
-      <p className="lead">
-        Sealed bids, one clearing price for everyone, unsold supply burned, trading opens at exactly that price, and a rule-bound treasury
-        defends it. Bots and bundlers can still buy, but only at the same price as you.
-      </p>
-      <ol className="steps">
-        <li><b>Create</b>supply, minimum price, bidding window</li>
-        <li><b>Seal</b>commit a hidden bid + deposit</li>
-        <li><b>Reveal</b>contract checks it matches the hash</li>
-        <li><b>Clear</b>one price for all; unsold supply burns</li>
-        <li><b>Trade</b>pool opens at the clearing price</li>
-        <li><b>Defend</b>Floor Keeper buys &amp; burns below it</li>
-      </ol>
-      <div className="row" style={{ margin: "20px 0" }}>
-        <Link className="btn" href="/create/">Create a launch</Link>
-        <Link href="/why/">See the simulation (SIMULATED) →</Link>
-      </div>
-      <h2>Launches on {FACTORY}</h2>
-      {err && <p className="err">{err}</p>}
-      {!launches && !err && <p className="note">Loading…</p>}
-      {launches && launches.length === 0 && <p className="note">No launches yet.</p>}
-      {launches && launches.length > 0 && (
-        <div className="panel" style={{ overflowX: "auto" }}>
-          <table>
-            <thead>
-              <tr><th>#</th><th>Token</th><th>Phase</th><th>Commits / reveals</th><th>Clearing (NEAR/token)</th><th>Sold</th><th>Burned</th></tr>
-            </thead>
-            <tbody>
-              {launches.map((l) => (
-                <tr key={l.id}>
-                  <td>{l.id}</td>
-                  <td><Link href={`/launch/?id=${l.id}`}>{l.name} <span className="note">${l.symbol}</span></Link></td>
-                  <td><span className={`badge ${PHASE_CLASS[l.phase] ?? ""}`}>{l.phase}</span></td>
-                  <td>{l.num_commits} / {l.num_reveals}</td>
-                  <td>{l.clearing_price !== "0" ? price(l.clearing_price) : "sealed"}</td>
-                  <td>{l.filled !== "0" ? whole(l.filled) : "–"}</td>
-                  <td>{l.burned_at_finalize !== "0" ? whole(l.burned_at_finalize) : "–"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
+      <section className="section" aria-labelledby="hero-title">
+        <div className="container container-wide hero-grid">
+          <div className="stack-4">
+            <p className="eyebrow">{hero.eyebrow}</p>
+            <h1 id="hero-title">{hero.title}</h1>
+            <p className="lead">{hero.subtitle}</p>
+            <div className="row" style={{ marginTop: "var(--space-2)" }}>
+              <Link className="btn btn-primary btn-lg" href={hero.primary.href}>
+                {hero.primary.label} <ArrowRight size={20} aria-hidden />
+              </Link>
+              <Link className="btn btn-secondary btn-lg" href={hero.secondary.href}>
+                {hero.secondary.label}
+              </Link>
+            </div>
+            <p className="small muted">{hero.proof}</p>
+          </div>
+          {/* The headline (LCP element) renders static; only the product card animates in. */}
+          <div className="hero-enter">
+            <HeroCard />
+          </div>
         </div>
-      )}
-    </main>
+      </section>
+
+      <section className="section section-alt" aria-labelledby="proof-title">
+        <Reveal className="container container-wide">
+          <div className="section-head">
+            <p className="eyebrow">{proof.eyebrow}</p>
+            <h2 id="proof-title">{proof.title}</h2>
+          </div>
+          <dl className="proof-grid">
+            {proof.items.map((p) => (
+              <div key={p.value} className="proof-item">
+                <dt className="proof-value">{p.value}</dt>
+                <dd className="muted">{p.label}</dd>
+              </div>
+            ))}
+          </dl>
+          <p style={{ marginTop: "var(--space-8)" }}>
+            <a href={proof.source.href} rel="noopener noreferrer">
+              {proof.source.label} <ExternalLink size={16} aria-hidden style={{ verticalAlign: "-2px" }} />
+            </a>
+          </p>
+        </Reveal>
+      </section>
+
+      <section className="section" id="how-it-works" aria-labelledby="steps-title">
+        <Reveal className="container container-wide">
+          <div className="section-head">
+            <p className="eyebrow">{steps.eyebrow}</p>
+            <h2 id="steps-title">{steps.title}</h2>
+          </div>
+          <ol className="steps">
+            {steps.items.map((s, i) => (
+              <li key={s.title}>
+                <span className="step-num num" aria-hidden>
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <h3>{s.title}</h3>
+                <p className="muted">{s.body}</p>
+              </li>
+            ))}
+          </ol>
+        </Reveal>
+      </section>
+
+      <section className="section section-alt" aria-labelledby="values-title">
+        <div className="container container-wide">
+          <div className="section-head">
+            <p className="eyebrow">{values.eyebrow}</p>
+            <h2 id="values-title">{values.title}</h2>
+          </div>
+          <div className="value-rows">
+            {values.items.map((v) => (
+              <Reveal key={v.title} className="value-row">
+                <h3>{v.title}</h3>
+                <ul>
+                  {v.claims.map((c) => (
+                    <li key={c}>{c}</li>
+                  ))}
+                </ul>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section" id="launches" aria-labelledby="launches-title">
+        <div className="container container-wide">
+          <div className="section-head">
+            <p className="eyebrow">{launches.eyebrow}</p>
+            <h2 id="launches-title">{launches.title}</h2>
+            <p className="lead">{launches.intro}</p>
+          </div>
+          <LaunchList />
+        </div>
+      </section>
+
+      <section className="section section-alt" aria-labelledby="trust-title">
+        <Reveal className="container container-wide">
+          <div className="section-head">
+            <p className="eyebrow">{trust.eyebrow}</p>
+            <h2 id="trust-title">{trust.title}</h2>
+          </div>
+          <div className="trust-grid">
+            {trust.items.map((t, i) => {
+              const Icon = TRUST_ICONS[i];
+              return (
+                <div key={t.title} className="trust-item stack-2">
+                  <Icon size={24} aria-hidden className="trust-icon" />
+                  <h3>{t.title}</h3>
+                  <p className="muted">{t.body}</p>
+                  <a href={t.link.href} rel="noopener noreferrer">
+                    {t.link.label}
+                  </a>
+                </div>
+              );
+            })}
+          </div>
+        </Reveal>
+      </section>
+
+      <section className="section" aria-labelledby="faq-title">
+        <div className="container faq">
+          <div className="section-head">
+            <p className="eyebrow">{faq.eyebrow}</p>
+            <h2 id="faq-title">{faq.title}</h2>
+          </div>
+          <div className="faq-list">
+            {faq.items.map((f, i) => (
+              <details key={f.q}>
+                <summary>
+                  <span className="step-num num" aria-hidden>
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span>{f.q}</span>
+                </summary>
+                <p className="muted">{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section final-cta" aria-labelledby="final-title">
+        <div className="container stack-4" style={{ textAlign: "center", justifyItems: "center" }}>
+          <h2 id="final-title">{final.title}</h2>
+          <p className="lead">{final.body}</p>
+          <div className="row" style={{ justifyContent: "center" }}>
+            <Link className="btn btn-primary btn-lg" href={final.primary.href}>
+              {final.primary.label}
+            </Link>
+            <a className="btn btn-secondary btn-lg" href={final.secondary.href} rel="noopener noreferrer">
+              {final.secondary.label}
+            </a>
+          </div>
+          <p className="small muted">{final.status}</p>
+        </div>
+      </section>
+    </>
   );
 }

@@ -1,37 +1,53 @@
-import type { Metadata } from "next";
-import Link from "next/link";
+import type { Metadata, Viewport } from "next";
+import localFont from "next/font/local";
 import "./globals.css";
 import { WalletProvider } from "@/lib/wallet";
-import { WalletButton } from "@/components/WalletButton";
+import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
+
+const display = localFont({ src: "./fonts/instrument-sans.woff2", weight: "500 700", variable: "--font-instrument", display: "swap" });
+const sans = localFont({ src: "./fonts/ibm-plex-sans.woff2", weight: "400 600", variable: "--font-plex", display: "swap" });
+const mono = localFont({ src: "./fonts/ibm-plex-mono.woff2", weight: "400", variable: "--font-plex-mono", display: "swap", preload: false });
+
+// Absolute URLs (canonical, Open Graph image) need the hosted address: set NEXT_PUBLIC_SITE_URL at build.
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL;
 
 export const metadata: Metadata = {
-  title: "SlowCook",
-  description: "Memecoin launches on NEAR where being first is worthless: sealed bids, one clearing price, burn, and a rule-bound Floor Keeper.",
+  title: "SlowCook: sealed-bid memecoin launches on NEAR",
+  description:
+    "Memecoin launches on NEAR testnet where every winner pays one clearing price, unsold supply is burned and a capped treasury defends the price.",
+  ...(SITE_URL
+    ? {
+        metadataBase: new URL(SITE_URL),
+        alternates: { canonical: "/" },
+        openGraph: {
+          title: "SlowCook: memecoin launches where being first is worthless",
+          description: "Sealed bids, one clearing price for every winner, unsold supply burned, and a capped treasury that defends the price. NEAR testnet.",
+          images: [{ url: "/og.png", width: 1200, height: 630, alt: "SlowCook: memecoin launches where being first is worthless" }],
+        },
+        twitter: { card: "summary_large_image", images: ["/og.png"] },
+      }
+    : {}),
 };
+
+export const viewport: Viewport = { themeColor: "#ffffff" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${display.variable} ${sans.variable} ${mono.variable}`}>
       <body>
+        <noscript>
+          <style>{`.reveal{opacity:1;transform:none}`}</style>
+        </noscript>
+        <a className="skip-link" href="#main">
+          Skip to content
+        </a>
         <WalletProvider>
-          <div className="wrap">
-            <nav className="top">
-              <Link href="/" className="brand">
-                Slow<span>Cook</span>
-              </Link>
-              <Link href="/">Launches</Link>
-              <Link href="/create/">Create</Link>
-              <Link href="/why/">Why SlowCook</Link>
-              <span className="badge warn">testnet · test NEAR only</span>
-              <span className="spacer" />
-              <WalletButton />
-            </nav>
+          <SiteHeader />
+          <main id="main" tabIndex={-1}>
             {children}
-            <footer>
-              Built at NEAR HACKATHON. Testnet only: no real value is raised. Contracts and tests:{" "}
-              <a href="https://github.com/REPLACE_ME/slowcook">github</a>.
-            </footer>
-          </div>
+          </main>
+          <SiteFooter />
         </WalletProvider>
       </body>
     </html>

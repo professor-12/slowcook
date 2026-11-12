@@ -1,48 +1,62 @@
-// Dependency-free SVG chart: insider share of supply and insider ROI, median with p5–p95 whiskers.
+// Dependency-free SVG for the README (SIMULATED): two small multiples, one horizontal bar per
+// mechanism (median), p5-p95 whisker, value at the tip. Same palette and specs as the web app
+// (apps/web/components/SimChart.tsx): dataviz reference slots 1-3 validated on #ffffff, bars <= 24px
+// with a 4px rounded data-end, hairline solid grid at clean ticks, legend, text in text colours.
 import type { Band } from "./run.ts";
 
-const C = { bg: "#0f1115", fg: "#e8e6e3", muted: "#9aa0a6", curve: "#e5534b", slow: "#3fb950", shaded: "#58a6ff", grid: "#2d333b" };
-const MECHS: [string, string, string][] = [
-  ["bondingCurve", "Bonding curve (pump.fun-style)", C.curve],
-  ["slowcook", "SlowCook", C.slow],
-  ["slowcookShaded", "SlowCook, shaded bids", C.shaded],
+const C = { bg: "#ffffff", fg: "#0b1a14", muted: "#52605a", grid: "#e3e8e6", base: "#8a9590", s: ["#2a78d6", "#eb6834", "#1baf7a"] };
+const FONT = "IBM Plex Sans, Segoe UI, Arial, sans-serif";
+const MECHS: [string, string][] = [
+  ["bondingCurve", "Bonding curve (pump.fun-style)"],
+  ["slowcook", "SlowCook"],
+  ["slowcookShaded", "SlowCook, shaded bids"],
 ];
+const pct = (v: number) => `${(v * 100).toFixed(v !== 0 && Math.abs(v) < 0.1 ? 1 : 0)}%`;
 
-function panel(x0: number, title: string, metric: string, summary: Record<string, Record<string, Band>>, lo: number, hi: number, fmt: (v: number) => string): string {
-  const W = 420, H = 300, left = 56, top = 60, plotH = 200, barW = 70, gap = 40;
-  const y = (v: number) => top + plotH - ((Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo)) * plotH;
-  let s = `<text x="${x0 + left}" y="36" fill="${C.fg}" font-size="16" font-weight="600">${title}</text>`;
-  for (let i = 0; i <= 4; i++) {
-    const v = lo + ((hi - lo) * i) / 4;
-    s += `<line x1="${x0 + left}" x2="${x0 + W - 10}" y1="${y(v)}" y2="${y(v)}" stroke="${C.grid}"/>`;
-    s += `<text x="${x0 + left - 8}" y="${y(v) + 4}" fill="${C.muted}" font-size="11" text-anchor="end">${fmt(v)}</text>`;
+function barPath(x0: number, x1: number, cy: number, h: number) {
+  const left = Math.min(x0, x1), w = Math.max(1, Math.abs(x1 - x0)), r = Math.min(4, w / 2);
+  const t = cy - h / 2, b = cy + h / 2;
+  return x1 >= x0
+    ? `M${left},${t} L${left + w - r},${t} Q${left + w},${t} ${left + w},${t + r} L${left + w},${b - r} Q${left + w},${b} ${left + w - r},${b} L${left},${b} Z`
+    : `M${left + w},${t} L${left + r},${t} Q${left},${t} ${left},${t + r} L${left},${b - r} Q${left},${b} ${left + r},${b} L${left + w},${b} Z`;
+}
+
+function panel(x0: number, y0: number, title: string, metric: string, summary: Record<string, Record<string, Band>>, lo: number, hi: number, step: number): string {
+  const W = 400, rowH = 44, bar = 20, left = 8, right = 64, top = 28;
+  const plotW = W - left - right;
+  const x = (v: number) => x0 + left + ((Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo)) * plotW;
+  const yEnd = y0 + top + MECHS.length * rowH;
+  let s = `<text x="${x0 + left}" y="${y0 + 14}" fill="${C.fg}" font-size="14" font-weight="600">${title}</text>`;
+  for (let v = lo; v <= hi + 1e-9; v += step) {
+    const vv = Math.round(v * 100) / 100;
+    s += `<line x1="${x(vv)}" x2="${x(vv)}" y1="${y0 + top}" y2="${yEnd}" stroke="${vv === 0 ? C.base : C.grid}" stroke-width="1" shape-rendering="crispEdges"/>`;
+    s += `<text x="${x(vv)}" y="${yEnd + 18}" fill="${C.muted}" font-size="12" text-anchor="middle">${pct(vv)}</text>`;
   }
-  if (lo < 0 && hi > 0) s += `<line x1="${x0 + left}" x2="${x0 + W - 10}" y1="${y(0)}" y2="${y(0)}" stroke="${C.muted}"/>`;
-  MECHS.forEach(([key, , color], i) => {
+  MECHS.forEach(([key], i) => {
     const b = summary[key][metric];
-    const bx = x0 + left + 20 + i * (barW + gap);
-    const base = y(Math.max(lo, 0));
-    const top_ = y(b.median);
-    s += `<rect x="${bx}" y="${Math.min(base, top_)}" width="${barW}" height="${Math.abs(base - top_)}" fill="${color}" rx="3"/>`;
-    s += `<line x1="${bx + barW / 2}" x2="${bx + barW / 2}" y1="${y(b.p5)}" y2="${y(b.p95)}" stroke="${C.fg}" stroke-width="2"/>`;
-    s += `<text x="${bx + barW / 2}" y="${Math.min(base, top_) - 8}" fill="${C.fg}" font-size="14" font-weight="700" text-anchor="middle">${fmt(b.median)}</text>`;
+    const cy = y0 + top + i * rowH + rowH / 2;
+    s += `<path d="${barPath(x(0), x(b.median), cy, bar)}" fill="${C.s[i]}"/>`;
+    s += `<line x1="${x(b.p5)}" x2="${x(b.p95)}" y1="${cy}" y2="${cy}" stroke="${C.fg}" stroke-width="1.5"/>`;
+    for (const v of [b.p5, b.p95]) s += `<line x1="${x(v)}" x2="${x(v)}" y1="${cy - 5}" y2="${cy + 5}" stroke="${C.fg}" stroke-width="1.5"/>`;
+    s += `<text x="${Math.max(x(b.median), x(b.p95)) + 8}" y="${cy + 4}" fill="${C.fg}" font-size="13" font-weight="600">${pct(b.median)}</text>`;
   });
-  return s + `<rect x="${x0}" y="0" width="${W}" height="${H}" fill="none"/>`;
+  return s;
 }
 
 export function renderChart(summary: Record<string, Record<string, Band>>, seeds: number): string {
-  const pct = (v: number) => `${Math.round(v * 100)}%`;
   const roiHi = Math.max(1, ...MECHS.map(([k]) => summary[k].insiderRoi.p95));
-  let s = `<svg xmlns="http://www.w3.org/2000/svg" width="880" height="360" viewBox="0 0 880 360" font-family="Inter,Segoe UI,Arial,sans-serif">`;
-  s += `<rect width="880" height="360" fill="${C.bg}"/>`;
-  s += panel(0, "Insider share of supply (bots + bundler)", "insiderShare", summary, 0, 1, pct);
-  // Round axis: from -200% up in 4 equal whole-hundred steps that cover the largest p95.
-  const roiLo = -2;
-  const roiTop = roiLo + 4 * Math.ceil((roiHi - roiLo) / 4);
-  s += panel(440, "Insider ROI after dumping at T+1", "insiderRoi", summary, roiLo, roiTop, pct);
-  MECHS.forEach(([, label, color], i) => {
-    s += `<rect x="${56 + i * 250}" y="${306}" width="12" height="12" fill="${color}"/><text x="${74 + i * 250}" y="${317}" fill="${C.fg}" font-size="12">${label}</text>`;
+  const roiTop = -2 + 4 * Math.ceil((roiHi + 2) / 4);
+  const W = 880, H = 300;
+  let s = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="${FONT}">`;
+  s += `<rect width="${W}" height="${H}" fill="${C.bg}"/>`;
+  // legend (always present for >= 2 series)
+  let lx = 32;
+  MECHS.forEach(([, label], i) => {
+    s += `<rect x="${lx}" y="20" width="12" height="12" rx="3" fill="${C.s[i]}"/><text x="${lx + 18}" y="30" fill="${C.muted}" font-size="13">${label}</text>`;
+    lx += 18 + label.length * 7.2 + 28;
   });
-  s += `<text x="56" y="345" fill="${C.muted}" font-size="11">SIMULATED · ${seeds} seeds · bars = median, whiskers = p5–p95 · 10 bots, 1 bundler (20 wallets), 170 retail = 200 wallets · sim/README.md</text>`;
+  s += panel(24, 52, "Insider share of supply (bots and bundler)", "insiderShare", summary, 0, 1, 0.25);
+  s += panel(456, 52, "Insider return after dumping at T+1", "insiderRoi", summary, -2, roiTop, (roiTop + 2) / 4);
+  s += `<text x="32" y="${H - 16}" fill="${C.muted}" font-size="12">SIMULATED · ${seeds} seeds · 200 wallets · bar = median, whisker = 5th to 95th percentile · method: sim/README.md</text>`;
   return s + "</svg>\n";
 }
