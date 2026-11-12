@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Point the repo at its public GitHub URL: fills the REPLACE_ME links, adds the CI badge to the
-# README, and sets the `origin` remote. Does NOT push.
+# README, and sets the `origin` remote (SSH). Does NOT push.
 # Usage: bash scripts/set-repo-url.sh https://github.com/<owner>/<repo>
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -17,10 +17,12 @@ if ! grep -qF "actions/workflows/ci.yml/badge.svg" README.md; then
   # Insert the badge right under the title line.
   awk -v b="$badge" 'NR==1{print; print ""; print b; next} {print}' README.md > README.md.tmp && mv README.md.tmp README.md
 fi
+# Push over SSH (this machine authenticates to GitHub with an SSH key, not an HTTPS token).
+remote="git@github.com:${BASH_REMATCH[1]}/${BASH_REMATCH[2]}.git"
 if git remote get-url origin >/dev/null 2>&1; then
-  git remote set-url origin "${url}.git"
+  git remote set-url origin "$remote"
 else
-  git remote add origin "${url}.git"
+  git remote add origin "$remote"
 fi
 echo "repo URL set to ${url}; remaining REPLACE_ME:"
 grep -rn "REPLACE_ME" Cargo.toml apps/web/app README.md || echo "  none"
