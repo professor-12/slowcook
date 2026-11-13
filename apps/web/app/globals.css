@@ -1199,3 +1199,17 @@ th.num {
     min-height: 44px;
   }
 }
+/* Mobile header: drop the empty desktop nav from the flex row and tighten gaps, so brand, the
+   Testnet badge and the menu button fit at 320px even with the fallback font. */
+@media (max-width: 899px) {
+  .site-header .bar {
+    gap: var(--space-3);
+  }
+  .site-header .bar > nav {
+    display: none;
+  }
+}
+.field .help,
+.field .error {
+  overflow-wrap: anywhere;
+}

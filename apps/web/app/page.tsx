@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ExternalLink, FileCheck2, ShieldAlert, ScrollText } from "lucide-react";
 import { home } from "@/content/site";
@@ -6,6 +7,8 @@ import { LaunchList } from "@/components/LaunchList";
 import { HeroCard } from "@/components/HeroCard";
 
 const TRUST_ICONS = [ScrollText, FileCheck2, ShieldAlert];
+
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 export default function Home() {
   const { hero, proof, steps, values, launches, trust, faq, final } = home;

@@ -4,6 +4,8 @@
 // verification/test-report.md, sim/README.md.
 
 export const REPO_URL = "https://github.com/professor-12/slowcook";
+// Public site address (canonical URLs, Open Graph image, sitemap). Override with NEXT_PUBLIC_SITE_URL.
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://web-omega-dun-65.vercel.app").replace(/\/$/, "");
 export const EXPLORER = "https://testnet.nearblocks.io";
 export const FACTORY_ID = "slowcook-0dd752.testnet";
 export const CODE_HASH = "9A6qZZvajAXpEfa7UCrzNuZ1HF1ushD8wb7TdCSiSsEy";

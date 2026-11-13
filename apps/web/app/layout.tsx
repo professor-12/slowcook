@@ -9,8 +9,7 @@ const display = localFont({ src: "./fonts/instrument-sans.woff2", weight: "500 7
 const sans = localFont({ src: "./fonts/ibm-plex-sans.woff2", weight: "400 600", variable: "--font-plex", display: "swap" });
 const mono = localFont({ src: "./fonts/ibm-plex-mono.woff2", weight: "400", variable: "--font-plex-mono", display: "swap", preload: false });
 
-// Absolute URLs (canonical, Open Graph image) need the hosted address: set NEXT_PUBLIC_SITE_URL at build.
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL;
+import { SITE_URL } from "@/content/site";
 
 export const metadata: Metadata = {
   title: "SlowCook: sealed-bid memecoin launches on NEAR",
@@ -19,7 +18,6 @@ export const metadata: Metadata = {
   ...(SITE_URL
     ? {
         metadataBase: new URL(SITE_URL),
-        alternates: { canonical: "/" },
         openGraph: {
           title: "SlowCook: memecoin launches where being first is worthless",
           description: "Sealed bids, one clearing price for every winner, unsold supply burned, and a capped treasury that defends the price. NEAR testnet.",
