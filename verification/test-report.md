@@ -216,7 +216,7 @@ DEMO_BUDGET_NEAR=1.3 DEMO_TICKS=6,7,8 DEMO_OVERDEPOSIT_PCT=10 DEMO_MIN_POOL_NEAR
 ## 7. Fresh-clone test (2026-11-10)
 
 **Method.**
-- `git clone` of commit `464107b` into a new directory, then the README steps: `pnpm install` → `pnpm build:contracts` → `pnpm test` → `pnpm sim` → `pnpm -C apps/web build`.
+- `git clone` of commit `d6131c1` into a new directory, then the README steps: `pnpm install` → `pnpm build:contracts` → `pnpm test` → `pnpm sim` → `pnpm -C apps/web build`.
 - It is **not a clean machine**: the toolchain, the pnpm store and the Cargo build cache (`CARGO_TARGET_DIR` pointed at the main checkout's `target/`) were shared, to avoid about 6 GB of duplicate build artifacts.
 - What it proves: the *committed files* plus the README commands are enough. Nothing depends on git-ignored local files.
 
@@ -229,7 +229,7 @@ DEMO_BUDGET_NEAR=1.3 DEMO_TICKS=6,7,8 DEMO_OVERDEPOSIT_PCT=10 DEMO_MIN_POOL_NEAR
 - `pnpm sim`: same table as before (insider share 40.3% vs 10.7%).
 - Web build: 5 static routes.
 - **Bug found and fixed:** `pnpm build:contracts` failed (exit 2) when `CARGO_TARGET_DIR` is set, because the wasm went to that directory while the scripts and sandbox tests read `<repo>/target/near`.
-  - Fixed in commit `8e985c7`: `build-contracts.sh` now passes `--out-dir <repo>/target/near/<crate>`.
+  - Fixed in commit `c24e29c`: `build-contracts.sh` now passes `--out-dir <repo>/target/near/<crate>`.
   - Re-run in the clone: exit 0. The clone's wasm is **byte-identical** to the main checkout's: sha256 `793252aa…` for the factory, `440d1fb0…` for the token.
 - **Deployed code matches the repo:** the base58 sha256 of the factory wasm, `9A6qZZvajAXpEfa7UCrzNuZ1HF1ushD8wb7TdCSiSsEy`, equals `slowcook-0dd752.testnet`'s on-chain `code_hash` (RPC `view_account`, 2026-11-10).
 
