@@ -187,7 +187,9 @@ DEMO_BUDGET_NEAR=1.3 DEMO_TICKS=6,7,8 DEMO_OVERDEPOSIT_PCT=10 DEMO_MIN_POOL_NEAR
 - `cargo clippy -p slowcook -p slowcook-token --tests -- -D warnings` → clean.
 - `cargo fmt --all --check` → clean.
 - `apps/web`: `tsc --noEmit` → clean.
-- **Not run:** the GitHub Actions workflow (`.github/workflows/ci.yml`). The repo has no remote yet.
+- **GitHub Actions CI** (`.github/workflows/ci.yml`), first run on 2026-11-12 at commit `7cde628`: **all steps passed**. [Run 43504634515](https://github.com/professor-12/slowcook/actions/runs/43504634515) (branch push); the tag push run 43504637214 also passed.
+  - `contracts` job, 16 min: fmt, clippy `-D warnings`, parity fixtures, unit + property (1000 cases) + parity tests, wasm build, sandbox integration tests.
+  - `web-and-sim` job, 24 s: frozen pnpm install, simulator tests, simulator smoke run, web typecheck and build.
 
 ## 6. Web app
 

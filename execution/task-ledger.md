@@ -74,3 +74,9 @@ About 64 hours remain to the deadline.
   - home JS is 182 KB against the 180 KB budget;
   - screen reader, manual keyboard walk-through, real-wallet signing;
   - canonical and sitemap once the hosted URL is known.
+
+## GitHub (2026-11-12/13)
+- **Repo:** https://github.com/professor-12/slowcook (public). `main` and the `hackathon-submission` tag were pushed at `7cde628`.
+- **Commit identity:** all commits rewritten before the first push to `Badejo Emmanuel <135185597+professor-12@users.noreply.github.com>`, at the human's choice.
+- **CI:** green on the first run (both jobs, every step); the README badge shows "passing".
+- **Next:** hosting. Then `node scripts/check-web.ts <url>` and `node scripts/lighthouse.ts <url>` against it, and set `NEXT_PUBLIC_SITE_URL`.
