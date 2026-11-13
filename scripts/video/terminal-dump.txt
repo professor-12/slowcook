@@ -1,0 +1,28 @@
+$ pnpm demo:dump 1     # NEAR testnet, 12 Nov 2026
+== 2. holders dump
+✔ poke (close the at-clearing interval)
+✔ dump b0-7m6fb.sc-bidders-da9146.testnet sells 9409 tokens
+✔ dump b1-7m6fb.sc-bidders-da9146.testnet sells 66473 tokens
+✔ dump b2-7m6fb.sc-bidders-da9146.testnet sells 57892 tokens
+✔ dump b3-7m6fb.sc-bidders-da9146.testnet sells 50341 tokens
+✔ dump b4-7m6fb.sc-bidders-da9146.testnet sells 66473 tokens
+✔ dump b5-7m6fb.sc-bidders-da9146.testnet sells 57892 tokens
+   spot 4755938467492575078 vs floor 17573894958225756073 (clearing 19526549953584173415); treasury 5.9295 NEAR
+== 3. keeper pokes 3 intervals, then defend()
+✘ defend before trigger (expect E_TRIGGER)  -> E_TRIGGER
+✔ poke 1/3 (after dump)
+    twap 9331821933490035870 vs floor 17573894958225756073 | below 1 above 0
+✔ poke 2/3 (after dump)
+    twap 4755938467492575078 vs floor 17573894958225756073 | below 2 above 0
+✔ poke 3/3 (after dump)
+    twap 4755938467492575078 vs floor 17573894958225756073 | below 3 above 0
+✔ defend #1
+    spent 0.5929 NEAR, bought & burned 103215 tokens; spot 4755938467492575078 -> 6901024334014071147; supply 1000000 -> 896784
+== 4. same epoch: 3 more pokes, defend again
+✔ poke 1/3 (same epoch)
+    twap 6434853558062913533 vs floor 17573894958225756073 | below 1 above 0
+✔ poke 2/3 (same epoch)
+    twap 6901024334014071147 vs floor 17573894958225756073 | below 2 above 0
+✔ poke 3/3 (same epoch)
+    twap 6901024334014071147 vs floor 17573894958225756073 | below 3 above 0
+✘ defend #2 in same epoch (expect E_EPOCH_CAP)  -> E_EPOCH_CAP

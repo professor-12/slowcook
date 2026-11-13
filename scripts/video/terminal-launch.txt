@@ -1,0 +1,28 @@
+$ pnpm demo:launch      # NEAR testnet, 12 Nov 2026
+== 2. sc-creator-b44c88.testnet creates the launch
+✔ create_launch
+   launch 1: token deep-1.slowcook-0dd752.testnet, phase Commit
+== 3. 12 sealed commits (only hashes go on-chain)
+✔ commit b1-7m6fb.sc-bidders-da9146.testnet (deposit 1.4300 NEAR)
+✔ commit b2-7m6fb.sc-bidders-da9146.testnet (deposit 1.4300 NEAR)
+✔ commit b0-7m6fb.sc-bidders-da9146.testnet (deposit 1.4300 NEAR)
+✔ commit b7-7m6fb.sc-bidders-da9146.testnet (deposit 1.4300 NEAR)
+✔ commit b5-7m6fb.sc-bidders-da9146.testnet (deposit 1.4300 NEAR)
+✔ commit b6-7m6fb.sc-bidders-da9146.testnet (deposit 1.4300 NEAR)
+✔ commit b4-7m6fb.sc-bidders-da9146.testnet (deposit 1.4300 NEAR)
+✔ commit b3-7m6fb.sc-bidders-da9146.testnet (deposit 1.4300 NEAR)
+✔ commit b8-7m6fb.sc-bidders-da9146.testnet (deposit 1.4300 NEAR)
+✔ commit b9-7m6fb.sc-bidders-da9146.testnet (deposit 1.4300 NEAR)
+✔ commit b11-7m6fb.sc-bidders-da9146.testnet (deposit 1.4300 NEAR)
+✔ commit b10-7m6fb.sc-bidders-da9146.testnet (deposit 1.4300 NEAR)
+   on-chain bid record exposes: tick=null qty=null deposit=1.4300 (price hidden)
+== 4. reveal
+✘ reveal with WRONG salt b2-7m6fb.sc-bidders-da9146.testnet (must fail E_HASH) (rejected as expected)
+   […] 11 bids revealed; 1 wallet deliberately does not reveal (5% penalty)
+== 5. finalize (anyone can call)
+✔ finalize
+   clearing price 19526549953584173415 yocto/token (tick 6), filled 600000, burned 0
+Every winner paid the same price per token: true
+On-chain result matches the TS prediction made before launch: {"clearing_price":true,"filled":true,"pool_near":true}
+Sniper (b0-7m6fb.sc-bidders-da9146.testnet) bid tick 20 and paid: 0.1837 NEAR for 9409 tokens
+Pool opened at 19526549953584173415 yocto/token (clearing 19526549953584173415); treasury 5.9295 NEAR

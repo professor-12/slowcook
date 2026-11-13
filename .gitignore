@@ -12,3 +12,5 @@ sim/out/runs.csv
 .demo-keys/
 apps/web/out/
 *.tsbuildinfo
+submission/video/*.mp4
+submission/video/work/

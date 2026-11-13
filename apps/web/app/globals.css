@@ -1012,10 +1012,12 @@ th.num {
 .viz-whisker {
   stroke: var(--foreground);
   stroke-width: 1.5;
+  pointer-events: none;
 }
 .viz-clearing {
   stroke: var(--foreground);
   stroke-width: 1;
+  pointer-events: none; /* annotation only: must not block hover on the clearing bar under it */
 }
 .viz-bar {
   cursor: default;
