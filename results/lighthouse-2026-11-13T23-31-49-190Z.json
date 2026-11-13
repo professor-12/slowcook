@@ -1,0 +1,85 @@
+{
+  "base": "https://web-omega-dun-65.vercel.app",
+  "mode": "mobile, simulated throttling (Lighthouse defaults)",
+  "ranAt": "2026-11-13T23:31:49.190Z",
+  "pages": [
+    {
+      "page": "/",
+      "benchmarkIndex": 1526.5,
+      "scores": {
+        "performance": 86,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "lcp": "1.5 s",
+      "tbt": "520 ms",
+      "cls": "0",
+      "fcp": "1.5 s",
+      "below_0_9": [
+        "total-blocking-time (0.56)",
+        "max-potential-fid (0.51)",
+        "mainthread-work-breakdown (0)",
+        "unused-javascript (0.5)",
+        "legacy-javascript-insight (0.5)",
+        "network-dependency-tree-insight (0)",
+        "render-blocking-insight (0)"
+      ],
+      "bootup": [
+        "122ms script Unattributable",
+        "23ms script /",
+        "467ms script /_next/static/immutable/chunks/04b2vapqpkp21.js",
+        "384ms script /_next/static/immutable/chunks/1nf6187j7ag7n.js",
+        "172ms script /_next/static/immutable/chunks/turbopack-3xd-7z66s-4wg.js"
+      ],
+      "mainThread": [
+        "Other 1663ms",
+        "Script Evaluation 1196ms",
+        "Style & Layout 256ms",
+        "Script Parsing & Compilation 121ms",
+        "Rendering 102ms"
+      ],
+      "thirdParty": []
+    },
+    {
+      "page": "/create/",
+      "benchmarkIndex": 1771,
+      "scores": {
+        "performance": 90,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "lcp": "1.1 s",
+      "tbt": "420 ms",
+      "cls": "0",
+      "fcp": "1.1 s",
+      "below_0_9": [
+        "total-blocking-time (0.66)",
+        "max-potential-fid (0.21)",
+        "mainthread-work-breakdown (0)",
+        "bootup-time (0)",
+        "unused-javascript (0.5)",
+        "legacy-javascript-insight (0.5)",
+        "network-dependency-tree-insight (0)",
+        "render-blocking-insight (0.5)"
+      ],
+      "bootup": [
+        "3750ms script /create/",
+        "71ms script Unattributable",
+        "381ms script /_next/static/immutable/chunks/turbopack-3xd-7z66s-4wg.js",
+        "212ms script /_next/static/immutable/chunks/04b2vapqpkp21.js",
+        "109ms script /_next/static/immutable/chunks/1nf6187j7ag7n.js",
+        "0ms script /_next/static/immutable/chunks/0b5f9uujjly50.css"
+      ],
+      "mainThread": [
+        "Script Evaluation 4605ms",
+        "Other 1262ms",
+        "Garbage Collection 278ms",
+        "Script Parsing & Compilation 190ms",
+        "Parse HTML & CSS 77ms"
+      ],
+      "thirdParty": []
+    }
+  ]
+}

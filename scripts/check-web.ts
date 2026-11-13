@@ -97,7 +97,16 @@ async function scrollThrough(page: Page) {
   await page.waitForTimeout(500);
 }
 
+const NET_FLAP = /ERR_NETWORK_CHANGED|ERR_INTERNET_DISCONNECTED|ERR_CONNECTION_RESET|ERR_NAME_NOT_RESOLVED/;
+/** Open a page; if the local network flapped during the load, retry once (counts as a site error only if it repeats). */
 async function openPage(browser: Browser, c: Check, width: number, reduced: boolean) {
+  const first = await openPageOnce(browser, c, width, reduced);
+  if (!first.errors.some((e) => NET_FLAP.test(e))) return first;
+  await first.ctx.close();
+  return openPageOnce(browser, c, width, reduced);
+}
+
+async function openPageOnce(browser: Browser, c: Check, width: number, reduced: boolean) {
   const ctx = await browser.newContext({ viewport: { width, height: 900 }, reducedMotion: reduced ? "reduce" : "no-preference", deviceScaleFactor: 1 });
   const page = await ctx.newPage();
   const errors: string[] = [];

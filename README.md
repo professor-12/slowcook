@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/professor-12/slowcook/actions/workflows/ci.yml/badge.svg)](https://github.com/professor-12/slowcook/actions/workflows/ci.yml)
 
+**Live demo:** https://web-omega-dun-65.vercel.app · **Testnet contract:** `slowcook-0dd752.testnet`
+
 SlowCook is a memecoin launchpad on NEAR:
 - **Sealed bids** go into a **single clearing price** that everyone pays.
 - **Unsold supply burns.**
@@ -168,7 +170,7 @@ Web app (static Next.js; connect a testnet wallet through near-connect):
 pnpm -C apps/web build && npx serve apps/web/out   # or: pnpm dev:web
 ```
 
-Hosted demo: **not deployed yet** (needs the team's Vercel/static host). Until then, use the local path above plus the demo video.
+**Live demo:** https://web-omega-dun-65.vercel.app (static export on Vercel, reading the testnet contract live; connect a NEAR testnet wallet to bid or trade).
 
 ## Frontend
 

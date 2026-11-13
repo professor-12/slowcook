@@ -80,3 +80,9 @@ About 64 hours remain to the deadline.
 - **Commit identity:** all commits rewritten before the first push to `Badejo Emmanuel <135185597+professor-12@users.noreply.github.com>`, at the human's choice.
 - **CI:** green on the first run (both jobs, every step); the README badge shows "passing".
 - **Next:** hosting. Then `node scripts/check-web.ts <url>` and `node scripts/lighthouse.ts <url>` against it, and set `NEXT_PUBLIC_SITE_URL`.
+
+## Hosted (2026-11-13 23:00–23:45 UTC)
+- **Live:** https://web-omega-dun-65.vercel.app. Vercel auto-deploys from `main`, about 30 s after a push.
+- **Hosted QA:** 6/6 pages, axe 0, 72/72 matrix. Lighthouse: accessibility, best practices and SEO all 100; performance 74–92.
+- **Fixed:** a 320px header overflow that appeared only with web fonts blocked. Canonical, Open Graph and sitemap are live.
+- **Remaining for the human:** demo video, X post (draft has the live and repo links), form fields, Partner A's other entry, final "yes" to submit.

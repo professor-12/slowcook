@@ -10,12 +10,14 @@ import lighthouse from "lighthouse";
 import { writeResult } from "./lib.ts";
 
 const BASE = (process.argv[2] ?? "http://127.0.0.1:8765").replace(/\/$/, "");
-const PAGES = [
+const ALL_PAGES = [
   ["home", "/"],
   ["launch-1", "/launch/?id=1"],
   ["why", "/why/"],
   ["create", "/create/"],
 ];
+// LH_PAGES=create,home limits the run; LH_DETAIL=1 prints the scripts with the most main-thread time.
+const PAGES = process.env.LH_PAGES ? ALL_PAGES.filter(([n]) => process.env.LH_PAGES!.split(",").includes(n)) : ALL_PAGES;
 const PORT = 9333;
 
 function findChrome(): string {
@@ -50,6 +52,13 @@ try {
       .filter((a: any) => a.score !== null && a.score < 0.9 && ["binary", "numeric", "metricSavings"].includes(a.scoreDisplayMode))
       .map((a: any) => `${a.id} (${a.score})`);
     const row = { page: path, benchmarkIndex: lhr.environment?.benchmarkIndex, scores, lcp: metric("largest-contentful-paint"), tbt: metric("total-blocking-time"), cls: metric("cumulative-layout-shift"), fcp: metric("first-contentful-paint"), below_0_9: below };
+    if (process.env.LH_DETAIL) {
+      const boot = (lhr.audits["bootup-time"]?.details?.items ?? []).slice(0, 6).map((i: any) => `${Math.round(i.scripting)}ms script ${String(i.url).replace(BASE, "").slice(0, 70)}`);
+      const work = (lhr.audits["mainthread-work-breakdown"]?.details?.items ?? []).slice(0, 5).map((i: any) => `${i.groupLabel ?? i.group} ${Math.round(i.duration)}ms`);
+      const third = (lhr.audits["third-party-summary"]?.details?.items ?? []).map((i: any) => `${i.entity?.text ?? i.entity} ${Math.round(i.mainThreadTime)}ms`);
+      Object.assign(row, { bootup: boot, mainThread: work, thirdParty: third });
+      console.log(`  bootup: ${boot.join(" | ")}\n  main thread: ${work.join(", ")}\n  third party: ${third.join(", ") || "none"}`);
+    }
     out.push(row);
     console.log(`${name.padEnd(9)} cpu-benchmark ${Math.round(lhr.environment?.benchmarkIndex ?? 0)} ${JSON.stringify(scores)} LCP ${row.lcp} TBT ${row.tbt} CLS ${row.cls}${below.length ? `\n          below 0.9: ${below.join(", ")}` : ""}`);
   }

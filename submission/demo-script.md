@@ -1,6 +1,6 @@
 # Demo video script (~2 min)
 
-**What to show:** the web app on launch 1 (`/launch/?id=1`, "SlowCook Deep Pool") plus a terminal.
+**What to show:** the live site (https://web-omega-dun-65.vercel.app), launch 1 at https://web-omega-dun-65.vercel.app/launch/?id=1 ("SlowCook Deep Pool"), plus a terminal.
 
 **Where the numbers come from:** the REAL testnet run on 2026-11-12, recorded in `results/launch-1-*.json` and `results/dump-1-*.json`. If you re-run the demo for recording, read the numbers from the new output instead.
 

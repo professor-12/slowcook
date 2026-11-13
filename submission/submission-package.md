@@ -26,7 +26,7 @@ Draft JSON: [`submission.json`](submission.json). `requestId` is generated once;
 - [x] Public GitHub repo created: https://github.com/professor-12/slowcook.
 - [x] Repo links, CI badge and `origin` set (`scripts/set-repo-url.sh https://github.com/professor-12/slowcook`); `projectUrl` filled in `submission.json`.
 - [ ] README "Related projects" (Q-015): the section is written. Confirm Partner A's other entry, or "none".
-- [ ] Hosted demo (e.g. Vercel: root `apps/web`, build `pnpm build`, output `out`), then run `node scripts/check-web.ts <hosted-url>`. The local headless check passes 6/6.
+- [x] Hosted demo: https://web-omega-dun-65.vercel.app. The hosted check passes: 6/6 pages, axe 0, 72/72 width × motion combinations (`verification/test-report.md` §6).
 - [ ] Record the ~2 min demo video (`demo-script.md`).
 - [ ] Post on X (`x-post.md`); put the post URL in `demoUrl`.
 - [ ] Fill `leadName`, `email`, `size`, `nearAddress` (mainnet payout), `projectUrl`, `demoUrl`; set `consent: true`.

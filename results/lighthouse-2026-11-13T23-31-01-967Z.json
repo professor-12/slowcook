@@ -1,30 +1,27 @@
 {
-  "base": "http://127.0.0.1:8765",
+  "base": "https://web-omega-dun-65.vercel.app",
   "mode": "mobile, simulated throttling (Lighthouse defaults)",
-  "ranAt": "2026-11-12T08:40:18.686Z",
+  "ranAt": "2026-11-13T23:31:01.967Z",
   "pages": [
     {
       "page": "/",
-      "benchmarkIndex": 723.5,
+      "benchmarkIndex": 1761,
       "scores": {
-        "performance": 91,
+        "performance": 84,
         "accessibility": 100,
         "best-practices": 100,
         "seo": 100
       },
-      "lcp": "1.1 s",
-      "tbt": "370 ms",
+      "lcp": "1.5 s",
+      "tbt": "610 ms",
       "cls": "0",
-      "fcp": "1.1 s",
+      "fcp": "1.5 s",
       "below_0_9": [
-        "total-blocking-time (0.71)",
-        "max-potential-fid (0.18)",
-        "interactive (0.66)",
+        "total-blocking-time (0.49)",
+        "max-potential-fid (0.52)",
+        "interactive (0.87)",
         "mainthread-work-breakdown (0)",
-        "bootup-time (0)",
         "unused-javascript (0.5)",
-        "cache-insight (0.5)",
-        "document-latency-insight (0.5)",
         "forced-reflow-insight (0)",
         "legacy-javascript-insight (0.5)",
         "network-dependency-tree-insight (0)",
@@ -33,56 +30,47 @@
     },
     {
       "page": "/launch/?id=1",
-      "benchmarkIndex": 740,
+      "benchmarkIndex": 1615.5,
       "scores": {
-        "performance": 61,
+        "performance": 81,
         "accessibility": 100,
         "best-practices": 100,
         "seo": 100
       },
-      "lcp": "5.7 s",
-      "tbt": "740 ms",
+      "lcp": "3.2 s",
+      "tbt": "470 ms",
       "cls": "0",
-      "fcp": "0.9 s",
+      "fcp": "1.1 s",
       "below_0_9": [
-        "largest-contentful-paint (0.17)",
-        "total-blocking-time (0.4)",
-        "max-potential-fid (0.46)",
-        "interactive (0.64)",
+        "largest-contentful-paint (0.73)",
+        "total-blocking-time (0.61)",
+        "max-potential-fid (0.39)",
         "mainthread-work-breakdown (0)",
         "bootup-time (0)",
         "unused-javascript (0)",
-        "cache-insight (0)",
-        "document-latency-insight (0.5)",
         "legacy-javascript-insight (0)",
         "network-dependency-tree-insight (0)",
-        "render-blocking-insight (0)"
+        "render-blocking-insight (0.5)"
       ]
     },
     {
       "page": "/why/",
-      "benchmarkIndex": 576.5,
+      "benchmarkIndex": 1696.5,
       "scores": {
-        "performance": 74,
+        "performance": 92,
         "accessibility": 100,
         "best-practices": 100,
         "seo": 100
       },
-      "lcp": "0.9 s",
-      "tbt": "1,610 ms",
+      "lcp": "1.2 s",
+      "tbt": "360 ms",
       "cls": "0",
-      "fcp": "0.9 s",
+      "fcp": "1.2 s",
       "below_0_9": [
-        "total-blocking-time (0.12)",
-        "max-potential-fid (0.04)",
-        "interactive (0.7)",
+        "total-blocking-time (0.72)",
+        "max-potential-fid (0.72)",
         "mainthread-work-breakdown (0)",
-        "bootup-time (0)",
-        "unused-css-rules (0.5)",
         "unused-javascript (0.5)",
-        "cache-insight (0.5)",
-        "document-latency-insight (0.5)",
-        "forced-reflow-insight (0)",
         "legacy-javascript-insight (0.5)",
         "network-dependency-tree-insight (0)",
         "render-blocking-insight (0)"
@@ -90,30 +78,27 @@
     },
     {
       "page": "/create/",
-      "benchmarkIndex": 481.5,
+      "benchmarkIndex": 1776,
       "scores": {
-        "performance": 81,
+        "performance": 74,
         "accessibility": 100,
         "best-practices": 100,
         "seo": 100
       },
-      "lcp": "0.9 s",
-      "tbt": "800 ms",
+      "lcp": "1.1 s",
+      "tbt": "1,510 ms",
       "cls": "0",
-      "fcp": "0.9 s",
+      "fcp": "1.1 s",
       "below_0_9": [
-        "total-blocking-time (0.36)",
-        "max-potential-fid (0.04)",
-        "interactive (0.71)",
+        "total-blocking-time (0.14)",
+        "max-potential-fid (0.03)",
+        "interactive (0.88)",
         "mainthread-work-breakdown (0)",
         "bootup-time (0)",
-        "unused-css-rules (0.5)",
         "unused-javascript (0.5)",
-        "cache-insight (0.5)",
-        "document-latency-insight (0.5)",
         "legacy-javascript-insight (0.5)",
         "network-dependency-tree-insight (0)",
-        "render-blocking-insight (0)"
+        "render-blocking-insight (0.5)"
       ]
     }
   ]

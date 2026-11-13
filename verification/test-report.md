@@ -210,8 +210,28 @@ DEMO_BUDGET_NEAR=1.3 DEMO_TICKS=6,7,8 DEMO_OVERDEPOSIT_PCT=10 DEMO_MIN_POOL_NEAR
   - **launch 61–79**, with LCP of about 5.5 s, because the page renders live chain data after hydration in a static export.
 - **CLS:** 0 on all pages.
 
+**Hosted site (https://web-omega-dun-65.vercel.app, 2026-11-13/14):**
+- `node scripts/check-web.ts https://web-omega-dun-65.vercel.app`:
+  - all 6 pages pass their content checks, and the wallet selector opens;
+  - axe finds **0 violations**;
+  - **72 of 72** width × motion combinations are clean (`results/web-check-2026-11-13T23-41-07-017Z.json`).
+  - One combination failed on a local DNS error (`ERR_NAME_NOT_RESOLVED`) and passed when re-run alone: HTTP 200, 0px overflow, 0 errors.
+  - The check now retries a page once when this machine's network drops mid-load.
+- **Bug found only on the hosted run, now fixed:** `/create/` overflowed 14px at 320px when web fonts failed to load. The mobile header's empty desktop nav still took a flex gap, and the "Testnet" badge's `display` overrode its mobile hide rule. Fixed in commit `2dc08f2`; with fonts blocked, page overflow is now 0 on all pages.
+- **SEO on the hosted build:** per-page canonical links, Open Graph image and `sitemap.xml` are live. Vercel redeployed automatically about 30 s after the push.
+- **Lighthouse 13.6 against the hosted URL** (low machine load, CPU benchmark 1,527–1,776; `results/lighthouse-2026-11-13T23-31-*.json`):
+
+| Page | Performance | Accessibility | Best practices | SEO | LCP | CLS |
+|---|---|---|---|---|---|---|
+| home | 84–86 | 100 | 100 | 100 | 1.5 s | 0 |
+| launch | 81 | 100 | 100 | 100 | 3.2 s | 0 |
+| why | 92 | 100 | 100 | 100 | 1.2 s | 0 |
+| create | 74–90 | 100 | 100 | 100 | 1.1 s | 0 |
+
+  - Create's total blocking time varied from 1,510 ms to 420 ms between consecutive runs.
+- **PageSpeed Insights:** not run. Google returned HTTP 429, because the anonymous daily quota is used up.
+
 **Not tested:**
-- a hosted URL (nothing is hosted yet);
 - signing with a real wallet;
 - a screen reader.
 

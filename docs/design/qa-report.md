@@ -6,7 +6,7 @@ Checklist: `core/qa-checklist.md`. Build: `apps/web` static export, served local
 - `node scripts/check-web.ts` (headless Chromium 1248, axe-core 4.14). Report: `results/web-check-2026-11-12T08-39-12-309Z.json`; screenshots in `verification/web-check/`.
 - `node scripts/lighthouse.ts` (Lighthouse 13.6, Chromium 1228, mobile defaults). Report: `results/lighthouse-2026-11-12T08-40-18-686Z.json`.
 
-**Not yet tested:** nothing is hosted, so no check ran against a hosted URL.
+**Hosted:** https://web-omega-dun-65.vercel.app. The hosted results are in `verification/test-report.md` §6: 6/6 pages, axe 0, 72/72 matrix, Lighthouse accessibility, best practices and SEO all 100, performance 74–92.
 
 ## Visual
 | Item | Result | Evidence / notes |
@@ -38,7 +38,7 @@ Checklist: `core/qa-checklist.md`. Build: `apps/web` static export, served local
 | 320/375/768/1024/1440/1920 × normal/reduced motion | **Pass** | 72 of 72 page × width × motion combinations have no console or page errors and no overflow. |
 | No horizontal overflow | **Pass** | Same run. |
 | Lighthouse mobile: performance ≥ 90, accessibility 100, SEO 100 | **Fail on performance** | Accessibility 100, best practices 100 and SEO 100 on all four pages. Performance varies with machine load (see below). |
-| Meta, OG, canonical, structured data, sitemap | **Partial** | Unique title and description per route; FAQPage JSON-LD on home; `robots.txt`; a 1200×630 OG image (`public/og.png`) that switches on with `NEXT_PUBLIC_SITE_URL`. Canonical and sitemap are **TODO** until the hosted URL is known. |
+| Meta, OG, canonical, structured data, sitemap | **Pass** | Unique title and description per route; per-page canonical (home, create, why; none on query-based launch pages); Open Graph and Twitter image (1200×630); FAQPage JSON-LD; `sitemap.xml`; `robots.txt` with its sitemap line. Verified on the hosted site. |
 
 ### Lighthouse performance in detail
 
@@ -77,7 +77,7 @@ This machine was shared with another project's builds during testing, so blockin
 | Every number sourced | **Pass** | Sources are listed in `core/PRD.md`, "Number sources". Simulated figures are labelled SIMULATED. |
 
 ## Open items, in priority order
-1. **Hosted URL.** Run `node scripts/check-web.ts <url>` and PageSpeed Insights against it; set `NEXT_PUBLIC_SITE_URL` so canonical and Open Graph tags are emitted, and add a sitemap.
+1. ~~Hosted URL~~ Done: checks pass on the hosted site. PageSpeed Insights is still to run once its quota resets or with an API key.
 2. **Real-wallet click-through** (needs a human with a testnet wallet).
 3. **Screen-reader pass and manual keyboard walk-through.**
 4. **Launch page LCP:** needs server rendering if a sub-2.5 s lab LCP is required.

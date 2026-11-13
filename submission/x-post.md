@@ -6,7 +6,8 @@ Sealed bids → one clearing price for everyone → unsold supply burns → trad
 
 Sim (200 wallets, 1000 runs): bots + bundler supply share 40% → 11%; their dump ROI +437% → −9%.
 
-Repo + 5-min repro: <REPO_URL>
+Live demo: https://web-omega-dun-65.vercel.app
+Repo + 5-min repro: https://github.com/professor-12/slowcook
 Demo: <VIDEO_URL>
 @NEARProtocol
 
