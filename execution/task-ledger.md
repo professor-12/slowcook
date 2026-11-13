@@ -35,7 +35,7 @@ Nothing has been cut so far. 1Click is not started, because there is no testnet 
 About 126 hours remain to the deadline.
 
 **Next actions, in order**
-1. **Human:** create the public repo, push, and fill the `REPLACE_ME` repo URLs (`Cargo.toml`, `apps/web/app/layout.tsx`).
+1. ~~**Human:** create the public repo~~ Done 2026-11-13: https://github.com/professor-12/slowcook. Links filled by `scripts/set-repo-url.sh`.
 2. **Human:** host `apps/web/out` (Vercel or any static host) and click through with a testnet wallet. This step is unverified.
 3. **Human:** record the video (`submission/demo-script.md`), post on X, and fill `submission/submission.json`.
 4. **Optional, agent:**

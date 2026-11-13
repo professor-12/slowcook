@@ -18,9 +18,3 @@ hex.workspace = true
 near-sdk = { workspace = true, features = ["unit-testing"] }
 proptest.workspace = true
 serde_json = "1"
-
-[package.metadata.near.reproducible_build]
-image = "sourcescan/cargo-near:0.22.0-rust-1.97.0"
-image_digest = "sha256:REPLACE_ME"
-passed_env = []
-container_build_command = ["cargo", "near", "build", "non-reproducible-wasm", "--locked"]

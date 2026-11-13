@@ -1,5 +1,7 @@
 # SlowCook: memecoin launches where being first is worthless
 
+[![CI](https://github.com/professor-12/slowcook/actions/workflows/ci.yml/badge.svg)](https://github.com/professor-12/slowcook/actions/workflows/ci.yml)
+
 SlowCook is a memecoin launchpad on NEAR:
 - **Sealed bids** go into a **single clearing price** that everyone pays.
 - **Unsold supply burns.**

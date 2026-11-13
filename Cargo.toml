@@ -5,7 +5,7 @@ members = ["contracts/slowcook", "contracts/token", "contracts/integration-tests
 [workspace.package]
 edition = "2021"
 license = "MIT"
-repository = "https://github.com/REPLACE_ME/slowcook"
+repository = "https://github.com/professor-12/slowcook"
 
 [workspace.dependencies]
 near-sdk = "=5.30.1"

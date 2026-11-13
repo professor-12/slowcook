@@ -23,8 +23,8 @@ Draft JSON: [`submission.json`](submission.json). `requestId` is generated once;
 - [x] Demo script: `demo-script.md`.
 
 **Needs the human**
-- [ ] Public GitHub repo created; push this repo there (the agent will not make anything public).
-- [ ] Run `bash scripts/set-repo-url.sh <repo-url>`. It fills the `REPLACE_ME` links, adds the CI badge and sets `origin`. Then push `main` and the `hackathon-submission` tag.
+- [x] Public GitHub repo created: https://github.com/professor-12/slowcook.
+- [x] Repo links, CI badge and `origin` set (`scripts/set-repo-url.sh https://github.com/professor-12/slowcook`); `projectUrl` filled in `submission.json`.
 - [ ] README "Related projects" (Q-015): the section is written. Confirm Partner A's other entry, or "none".
 - [ ] Hosted demo (e.g. Vercel: root `apps/web`, build `pnpm build`, output `out`), then run `node scripts/check-web.ts <hosted-url>`. The local headless check passes 6/6.
 - [ ] Record the ~2 min demo video (`demo-script.md`).

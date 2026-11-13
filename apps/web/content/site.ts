@@ -3,7 +3,7 @@
 // Sources: results/launch-1-2026-11-12T07-16-28-408Z.json, results/dump-1-2026-11-12T07-21-36-824Z.json,
 // verification/test-report.md, sim/README.md.
 
-export const REPO_URL = "https://github.com/REPLACE_ME/slowcook";
+export const REPO_URL = "https://github.com/professor-12/slowcook";
 export const EXPLORER = "https://testnet.nearblocks.io";
 export const FACTORY_ID = "slowcook-0dd752.testnet";
 export const CODE_HASH = "9A6qZZvajAXpEfa7UCrzNuZ1HF1ushD8wb7TdCSiSsEy";
