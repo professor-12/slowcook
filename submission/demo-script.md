@@ -1,6 +1,6 @@
 # Demo video
 
-**Rendered:** `submission/video/slowcook-demo.mp4` (re-rendered 2026-11-14 after the creator-lock fix; see the length below), 1280×720 H.264/AAC, about 6.9 MB (git-ignored). Captions are burned in; the separate caption file is `submission/video/slowcook-demo.en.srt`.
+**Rendered:** `submission/video/slowcook-demo.mp4`, 2:17 (137.3 s), re-rendered 2026-11-14 after the creator-lock fix, 1280×720 H.264/AAC, 7.8 MB (git-ignored). Captions are burned in; the separate caption file is `submission/video/slowcook-demo.en.srt`.
 
 **Regenerate:**
 ```bash
@@ -9,7 +9,7 @@ PIPER_BIN=<venv>/bin/piper PIPER_VOICE=<path>/en_US-joe-medium.onnx node scripts
 
 **How it is made**
 - **Voice:** synthetic, generated locally with Piper using the CC0 "joe" voice. Say so if asked.
-- **Footage:** headless recordings of the live site, plus three terminal cards that replay real lines from the 2026-11-14 launch 0 and dump runs on the fixed factory (`slowcook-674040.testnet`). Omitted lines, and one line copied from the result file, are marked `[…]`.
+- **Footage:** headless recordings of the site (on 2026-11-14 recorded from the local build of commit `96fbc1f`, served by `scripts/serve-web.ts`, because Vercel's security checkpoint now refuses headless browsers; the page data is read live from testnet either way), plus three terminal cards that replay real lines from the 2026-11-14 launch 0 and dump runs on the fixed factory (`slowcook-674040.testnet`). Omitted lines, and one line copied from the result file, are marked `[…]`.
 - **Narration and sources:** `scripts/video/narration.ts`. Every figure there has a source comment.
 
 **Scenes:** title → problem (home) → how it works (home) → SIMULATED results (/why) → real launch (terminal) → clearing (launch 0 page) → sell-off and Floor Keeper (terminal) → live result (launch 0 page) → creator lock and vest (terminal) → tests and links (end card).
