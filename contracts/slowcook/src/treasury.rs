@@ -159,45 +159,47 @@ impl SlowCook {
     }
 
     /// Release the creator allocation once price has held at/above clearing for `h_obs` observations.
-    pub fn unlock_creator(&mut self, launch_id: U64) {
+    /// Returns the whole tokens sent.
+    pub fn unlock_creator(&mut self, launch_id: U64) -> U128 {
         let mut l = self.launch(launch_id.0);
         ensure(l.status == Status::Finalized, E_NOT_FINAL, "not finalized");
-        ensure(!l.creator_unlocked, E_DUP, "already unlocked");
         ensure(
             l.treasury.above_streak >= l.params.h_obs,
             E_LOCKED,
             "price has not held at/above clearing for h_obs observations",
         );
-        l.creator_unlocked = true;
+        let amount = l.creator_tokens - l.creator_released;
+        ensure(amount > 0, E_DUP, "already unlocked");
+        l.creator_released += amount;
         events::emit(
             "creator_unlocked",
-            json!({ "launch_id": l.id, "creator": l.creator, "amount": U128(l.creator_tokens) }),
+            json!({ "launch_id": l.id, "creator": l.creator, "amount": U128(amount) }),
         );
-        if l.creator_tokens > 0 {
-            ext_token::ext(l.token_id.clone())
-                .with_attached_deposit(NearToken::from_yoctonear(1))
-                .with_static_gas(GAS_TOKEN_CALL)
-                .ft_transfer(
-                    l.creator.clone(),
-                    U128(l.creator_tokens * math::ONE_TOKEN),
-                    Some("creator unlock".into()),
-                )
-                .then(
-                    Self::ext(env::current_account_id())
-                        .with_static_gas(GAS_CALLBACK)
-                        .on_creator_tokens(U64(l.id)),
-                )
-                .detach();
-        }
+        ext_token::ext(l.token_id.clone())
+            .with_attached_deposit(NearToken::from_yoctonear(1))
+            .with_static_gas(GAS_TOKEN_CALL)
+            .ft_transfer(
+                l.creator.clone(),
+                U128(amount * math::ONE_TOKEN),
+                Some("creator unlock".into()),
+            )
+            .then(
+                Self::ext(env::current_account_id())
+                    .with_static_gas(GAS_CALLBACK)
+                    .on_creator_tokens(U64(l.id), U128(amount)),
+            )
+            .detach();
         self.launches.insert(l.id, l);
+        U128(amount)
     }
 
+    /// On a failed transfer, return exactly that amount to the unreleased balance.
     #[private]
-    pub fn on_creator_tokens(&mut self, launch_id: U64) -> bool {
+    pub fn on_creator_tokens(&mut self, launch_id: U64, amount: U128) -> bool {
         let ok = promise_ok();
         if !ok {
             let mut l = self.launch(launch_id.0);
-            l.creator_unlocked = false;
+            l.creator_released -= amount.0;
             self.launches.insert(l.id, l);
         }
         ok
@@ -226,10 +228,15 @@ impl SlowCook {
             trigger_ready,
             epoch_remaining: U128(epoch_remaining),
             creator_unlockable: l.status == Status::Finalized
-                && !l.creator_unlocked
+                && l.creator_released < l.creator_tokens
                 && l.treasury.above_streak >= l.params.h_obs,
             creator_tokens: U128(l.creator_tokens),
-            creator_unlocked: l.creator_unlocked,
+            creator_released: U128(l.creator_released),
+            creator_vested: U128(l.creator_tokens),
+            creator_lock_ends_ms: U64(l.finalized_ms),
+            creator_vest_ends_ms: U64(l.finalized_ms),
+            hold_price: U128(l.clearing_price),
+            creator_unlocked: l.creator_tokens > 0 && l.creator_released >= l.creator_tokens,
         }
     }
 }

@@ -240,6 +240,7 @@ impl SlowCook {
             ..Default::default()
         };
         l.status = Status::Finalized;
+        l.finalized_ms = now;
         events::emit(
             "finalized",
             json!({

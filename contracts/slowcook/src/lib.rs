@@ -40,6 +40,33 @@ pub const MIN_BID_DEPOSIT: NearToken = NearToken::from_millinear(10);
 /// Swap fee, accrues to the locked liquidity.
 pub const POOL_FEE_BPS: u128 = 30;
 
+pub const DAY_MS: u64 = 86_400_000;
+
+// Protocol minimums for production launches. The creator picks values at or above these; nothing
+// can lower them after creation. README "Launch parameters" lists every default and minimum.
+/// No creator token moves before `finalized_ms + MIN_CREATOR_LOCK_MS`.
+pub const MIN_CREATOR_LOCK_MS: u64 = 7 * DAY_MS;
+pub const DEFAULT_CREATOR_LOCK_MS: u64 = 7 * DAY_MS;
+/// After the lock the allocation vests linearly over at least this long.
+pub const MIN_CREATOR_VEST_MS: u64 = 7 * DAY_MS;
+pub const DEFAULT_CREATOR_VEST_MS: u64 = 30 * DAY_MS;
+/// `h_obs * poke_interval`: the price must hold above the margin for at least this long.
+pub const MIN_HOLD_MS: u64 = 7 * DAY_MS;
+/// Interval TWAPs count towards the hold only at or above `clearing * (1 + margin)`. The pool
+/// opens exactly at clearing, so a launch nobody trades must not count as holding.
+pub const UNLOCK_MARGIN_BPS: u128 = 500;
+pub const MIN_POKE_INTERVAL_MS: u64 = 60_000;
+pub const DEFAULT_POKE_INTERVAL_MS: u64 = 600_000;
+pub const MIN_K_OBS: u32 = 3;
+pub const DEFAULT_K_OBS: u32 = 6;
+/// `k_obs * poke_interval`: the price must sit below the floor this long before a buyback.
+pub const MIN_TRIGGER_MS: u64 = 30 * 60_000;
+pub const MIN_EPOCH_MS: u64 = 3_600_000;
+pub const DEFAULT_EPOCH_MS: u64 = DAY_MS;
+// Floors for demo launches (testnet factories only, labelled in every view).
+pub const DEMO_MIN_CREATOR_LOCK_MS: u64 = 30_000;
+pub const DEMO_MIN_CREATOR_VEST_MS: u64 = 10_000;
+
 const CODE_KEY: &[u8] = b"token_code";
 
 #[derive(BorshStorageKey)]
@@ -76,6 +103,8 @@ pub struct SlowCook {
     pub marginal: LookupMap<(LaunchId, u8), Vec<u128>>,
     pub token_to_launch: LookupMap<AccountId, LaunchId>,
     pub token_code: TokenCode,
+    /// Set once at init, only on a `.testnet` account: launches may opt into demo timings.
+    pub demo_allowed: bool,
 }
 
 #[ext_contract(ext_token)]
@@ -93,7 +122,8 @@ pub fn now_ms() -> u64 {
 #[near]
 impl SlowCook {
     #[init]
-    pub fn new(owner: AccountId) -> Self {
+    pub fn new(owner: AccountId, demo: Option<bool>) -> Self {
+        let demo_allowed = demo.unwrap_or(false);
         Self {
             owner,
             launches: LookupMap::new(StorageKey::Launches),
@@ -102,6 +132,7 @@ impl SlowCook {
             marginal: LookupMap::new(StorageKey::Marginal),
             token_to_launch: LookupMap::new(StorageKey::TokenToLaunch),
             token_code: TokenCode::Unset,
+            demo_allowed,
         }
     }
 
@@ -157,7 +188,7 @@ impl SlowCook {
     /// token account's storage budget.
     #[payable]
     pub fn create_launch(&mut self, args: CreateLaunchArgs) -> U64 {
-        let params = validate(&args);
+        let params = validate(&args, self.demo_allowed);
         let creator = env::predecessor_account_id();
         let id = self.next_id;
         let sym: String = args
@@ -227,7 +258,8 @@ impl SlowCook {
             proceeds: 0,
             pool: Pool::default(),
             treasury: Treasury::default(),
-            creator_unlocked: false,
+            finalized_ms: 0,
+            creator_released: 0,
             claims: 0,
         };
         self.launches.insert(id, launch);
@@ -392,7 +424,7 @@ pub(crate) fn promise_ok() -> bool {
     env::promise_results_count() == 1 && env::promise_result_checked(0, 1024).is_ok()
 }
 
-fn validate(a: &CreateLaunchArgs) -> Params {
+fn validate(a: &CreateLaunchArgs, _demo_allowed: bool) -> Params {
     let bad = |m: &str| fail(E_PARAMS, m);
     if a.name.is_empty() || a.name.len() > 64 {
         bad("name must be 1..64 chars");
@@ -438,6 +470,13 @@ fn validate(a: &CreateLaunchArgs) -> Params {
         epoch_ms: a.epoch_secs.unwrap_or(120) as u64 * 1000,
         poke_interval_ms: a.poke_interval_secs.unwrap_or(10) as u64 * 1000,
         max_commits: a.max_commits.unwrap_or(500),
+        creator_lock_ms: a
+            .creator_lock_secs
+            .map_or(DEFAULT_CREATOR_LOCK_MS, |s| s as u64 * 1000),
+        creator_vest_ms: a
+            .creator_vest_secs
+            .map_or(DEFAULT_CREATOR_VEST_MS, |s| s as u64 * 1000),
+        demo: a.demo.unwrap_or(false),
     };
     if !(10_100..=20_000).contains(&d.tick_factor_bps) {
         bad("tick_factor_bps must be 10100..20000");
@@ -478,3 +517,6 @@ mod proptests;
 
 #[cfg(test)]
 mod parity_tests;
+
+#[cfg(test)]
+mod creator_lock_tests;

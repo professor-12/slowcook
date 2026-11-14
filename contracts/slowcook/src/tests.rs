@@ -51,7 +51,9 @@ impl H {
         // Start from empty mocked storage (testing_env! otherwise carries it over between cases).
         let _ = near_sdk::mock::with_mocked_blockchain(|b| b.take_storage());
         set_ctx(1_000_000, FACTORY, 0, vec![]);
-        let mut c = SlowCook::new(acc(FACTORY));
+        let mut c = SlowCook::new(acc(FACTORY), None);
+        // The mock factory is not on .testnet; tests that need demo timings opt in directly.
+        c.demo_allowed = true;
         c.token_code = TokenCode::Global {
             hash: [7u8; 32].into(),
         };
@@ -82,6 +84,9 @@ impl H {
             epoch_secs: Some(120),
             poke_interval_secs: Some(10),
             max_commits: None,
+            creator_lock_secs: Some(60),
+            creator_vest_secs: Some(60),
+            demo: Some(true),
         }
     }
 
@@ -799,7 +804,8 @@ fn creator_unlocks_after_h_observations_at_or_above_clearing() {
     }
     h.ctx(CREATOR, 0, vec![]);
     h.c.unlock_creator(U64(id));
-    assert!(h.c.launch(id).creator_unlocked);
+    let l = h.c.launch(id);
+    assert_eq!(l.creator_released, l.creator_tokens);
 }
 
 #[test]

@@ -33,6 +33,13 @@ pub struct CreateLaunchArgs {
     pub epoch_secs: Option<u32>,
     pub poke_interval_secs: Option<u32>,
     pub max_commits: Option<u32>,
+    /// Time after finalize before any creator token can be released. Production minimum 7 days.
+    pub creator_lock_secs: Option<u32>,
+    /// Linear vesting period that starts when the lock ends. Production minimum 7 days.
+    pub creator_vest_secs: Option<u32>,
+    /// Short timings for a testnet demo. Only a factory initialised with `demo_allowed` on a
+    /// `.testnet` account accepts it, and the flag is public in every view of the launch.
+    pub demo: Option<bool>,
 }
 
 /// Floor Keeper and auction parameters, fixed at creation.
@@ -48,6 +55,10 @@ pub struct Params {
     pub epoch_ms: u64,
     pub poke_interval_ms: u64,
     pub max_commits: u32,
+    pub creator_lock_ms: u64,
+    pub creator_vest_ms: u64,
+    /// Testnet demo timings: the protocol minimums were relaxed for this launch.
+    pub demo: bool,
 }
 
 #[near(serializers = [borsh, json])]
@@ -205,7 +216,10 @@ pub struct Launch {
     pub proceeds: u128,
     pub pool: Pool,
     pub treasury: Treasury,
-    pub creator_unlocked: bool,
+    /// When the launch reached `Finalized` (the creator lock runs from here).
+    pub finalized_ms: u64,
+    /// Creator tokens (whole) released so far, including transfers still in flight.
+    pub creator_released: u128,
     pub claims: u32,
 }
 
@@ -273,6 +287,9 @@ pub struct LaunchView {
     pub creator_tokens: U128,
     pub burned_at_finalize: U128,
     pub proceeds: U128,
+    pub finalized_ms: U64,
+    pub creator_released: U128,
+    /// True once the whole creator allocation has been released.
     pub creator_unlocked: bool,
     pub claims: u32,
 }
@@ -307,7 +324,9 @@ impl LaunchView {
             creator_tokens: U128(l.creator_tokens),
             burned_at_finalize: U128(l.burned_at_finalize),
             proceeds: U128(l.proceeds),
-            creator_unlocked: l.creator_unlocked,
+            finalized_ms: U64(l.finalized_ms),
+            creator_released: U128(l.creator_released),
+            creator_unlocked: l.creator_tokens > 0 && l.creator_released >= l.creator_tokens,
             claims: l.claims,
         }
     }
@@ -337,7 +356,15 @@ pub struct TreasuryView {
     pub spot_price: U128,
     pub trigger_ready: bool,
     pub epoch_remaining: U128,
+    /// `unlock_creator` would release something now.
     pub creator_unlockable: bool,
     pub creator_tokens: U128,
+    pub creator_released: U128,
+    /// Vested so far by time (release also needs the price-hold condition).
+    pub creator_vested: U128,
+    pub creator_lock_ends_ms: U64,
+    pub creator_vest_ends_ms: U64,
+    /// Interval TWAPs must be at or above this to count towards the hold (clearing + margin).
+    pub hold_price: U128,
     pub creator_unlocked: bool,
 }

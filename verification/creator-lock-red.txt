@@ -1,0 +1,29 @@
+Creator-lock tests run against the pre-fix unlock logic (commit "Creator lock: failing tests first").
+Command: cd contracts/slowcook && cargo test --lib creator_lock   (2026-11-14, local, WSL2)
+
+Unit tests: 4 passed; 9 failed; 53 filtered out; finished in 302.52s
+failures:
+    creator_lock_tests::creator_cannot_unlock_before_the_lock_even_if_price_holds
+    creator_lock_tests::demo_launches_still_need_a_lock_and_a_vest
+    creator_lock_tests::demo_timings_need_a_testnet_factory
+    creator_lock_tests::demo_unlock_vests_linearly_after_the_lock
+    creator_lock_tests::pool_resting_at_clearing_is_not_holding
+    creator_lock_tests::production_defaults_meet_the_minimums
+    creator_lock_tests::production_rejects_h1_with_1s_poke
+    creator_lock_tests::production_rejects_values_below_each_minimum
+    creator_lock_tests::production_unlock_after_lock_vests_with_sustained_price
+  e.g. production_unlock_after_lock_vests_with_sustained_price: "nothing vested: 100000"
+  (the old code released all 100,000 creator tokens at day 7, before any vesting).
+
+Property test (after biasing it towards short holds and frequent pokes):
+Command: cargo test --lib creator_never_paid
+test result: FAILED. 0 passed; 1 failed
+Test failed: assertion failed: h.now_ms >= fin + MIN_CREATOR_LOCK_MS
+minimal failing input (one run): lock_days = 0, hold_hours = 1, steps = [(2, 1), (0, 1), (0, 1), (0, 1), (5, 1)]
+  (op 2 = poke, 0 = pump, 5 = unlock; each step advances 1 hour: the creator was paid 5 hours after finalize).
+  The case shrinks to a different minimal history on each run (random seeds); every run failed.
+
+The 4 tests that passed on the old code (the filter also matched the existing tests::creator_locked_initially):
+  release_blocked_while_price_below_margin, failed_creator_transfer_returns_only_that_amount,
+  tests::creator_locked_initially, and creator_never_paid_before_min_lock in its first, unbiased form
+  (it did not find the bypass; it was then biased towards short holds and frequent pokes, and fails as above).
