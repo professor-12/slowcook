@@ -3,11 +3,13 @@
 //  2. holders dump tokens into the pool (ft_transfer_call -> ft_on_transfer)
 //  3. keeper pokes k_obs intervals -> defend() buys back and burns (<= r% of treasury)
 //  4. k_obs more pokes -> defend() again -> E_EPOCH_CAP (same epoch)
-//  5. a buyer restores the price; h_obs pokes at/above clearing -> unlock_creator succeeds
+//  5. a buyer restores the price; h_obs pokes above clearing + 5%
+//  6. creator unlock while the lock is still running -> E_LOCKED (price holds, lock does not)
+//  7. mid-vest unlock -> only the vested part; after the vest -> the rest
 // Usage: pnpm demo:dump <launch_id>
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { KEYS_DIR, account, call, events, fmtNear, need, sleep, view, writeResult, type TxResult } from "./lib.ts";
+import { KEYS_DIR, account, call, events, fmtNear, need, sleep, view, waitForChainTime, writeResult, type TxResult } from "./lib.ts";
 
 const FACTORY = need("SLOWCOOK_FACTORY");
 const CREATOR = need("SLOWCOOK_CREATOR");
@@ -80,17 +82,38 @@ console.log("\n== 5. price recovers; creator unlock after it holds");
 const isqrt = (n: bigint) => { if (n < 2n) return n; let x = n, y = (x + 1n) / 2n; while (y < x) { x = y; y = (x + n / x) / 2n; } return x; };
 const pl = (await view(FACTORY, "get_pool", { launch_id: launchId })).pool;
 const [x, y] = [BigInt(pl.near_reserve), BigInt(pl.token_reserve)];
-const target = (clearing * 110n) / 100n;
+const target = (clearing * 115n) / 100n;
 const needNear = isqrt((target * x * y) / 10n ** 18n) - x;
 const buyNear = needNear > 0n ? (needNear * 101n) / 100n : 10n ** 23n;
 const buy = await call(keeper, FACTORY, "swap_near_for_token", { launch_id: launchId, min_out: "0" }, { deposit: buyNear, tgas: 100 });
-record(`buyer swaps ${fmtNear(buyNear)} NEAR for tokens (sized to lift spot ~10% above clearing)`, buy);
-console.log(`    spot now ${await spot()} (clearing ${clearing})`);
+record(`buyer swaps ${fmtNear(buyNear)} NEAR for tokens (sized to lift spot ~15% above clearing)`, buy);
+console.log(`    spot now ${await spot()} (clearing ${clearing}, hold needs >= ${(await treasury()).hold_price})`);
 await pokeN(h + 1, "recovery");
-const un = await call(account(CREATOR), FACTORY, "unlock_creator", { launch_id: launchId }, { tgas: 150 });
-record("unlock_creator after price held", un);
+
+const unlock = async (label: string) => {
+  const r = await call(account(CREATOR), FACTORY, "unlock_creator", { launch_id: launchId }, { tgas: 150 });
+  const amount = r.ok ? BigInt(r.value) : 0n;
+  record(label, r, r.ok ? { released: amount.toString() } : {});
+  if (r.ok) console.log(`    released ${amount} tokens`);
+  return { r, amount };
+};
+const lockInfo = await treasury();
+const lockEnd = Number(lockInfo.creator_lock_ends_ms);
+const vestEnd = Number(lockInfo.creator_vest_ends_ms);
+console.log(`\n== 6. price has held (${lockInfo.treasury.above_streak} of ${h} intervals); lock ends ${new Date(lockEnd).toISOString()}, vest ends ${new Date(vestEnd).toISOString()}`);
+const lockedTry = await unlock("unlock_creator while the lock runs (expect E_LOCKED)");
+const lockedOk = !lockedTry.r.ok && /creator lock ends/.test(lockedTry.r.error ?? "");
+if (!lockedOk) console.log("    NOTE: the lock was already over or another check failed; see the step above");
+
+console.log("\n== 7. mid-vest release, then the rest");
+await waitForChainTime(lockEnd + (vestEnd - lockEnd) / 2, "half the vest");
+await pokeN(1, "still holding");
+const part = await unlock("unlock_creator mid-vest (expect a partial release)");
+await waitForChainTime(vestEnd, "end of the vest");
+await pokeN(1, "still holding");
+const rest = await unlock("unlock_creator after the vest (expect the rest)");
 const creatorBal = BigInt(await view(token, "ft_balance_of", { account_id: CREATOR }));
-console.log(`    creator token balance: ${creatorBal / 10n ** 18n}`);
+console.log(`    creator token balance: ${creatorBal / 10n ** 18n} of allocation ${launch.creator_tokens}`);
 
 const t1 = await treasury();
 const solvency = await view(FACTORY, "get_solvency");
@@ -100,6 +123,11 @@ const path = writeResult(`dump-${launchId}`, {
   treasury_before: t0.treasury.near_balance, treasury_after: t1.treasury.near_balance,
   defend_1: dev ?? null, supply_before_defend: supplyBefore, supply_after_defend: supplyAfter,
   defend_2_error: d2.ok ? null : (d2.error ?? "").match(/E_[A-Z_]+/)?.[0],
-  creator_unlocked: un.ok, creator_balance: creatorBal, solvency, steps,
+  creator_lock: {
+    lock_ends_ms: lockEnd, vest_ends_ms: vestEnd, allocation: launch.creator_tokens,
+    rejected_during_lock: lockedOk, rejected_error: lockedTry.r.ok ? null : lockedTry.r.error,
+    mid_vest_released: part.amount, after_vest_released: rest.amount,
+  },
+  creator_balance: creatorBal, solvency, steps,
 });
 console.log(`\nwrote ${path}`);

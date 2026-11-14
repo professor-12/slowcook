@@ -124,6 +124,11 @@ impl SlowCook {
     #[init]
     pub fn new(owner: AccountId, demo: Option<bool>) -> Self {
         let demo_allowed = demo.unwrap_or(false);
+        ensure(
+            !demo_allowed || env::current_account_id().as_str().ends_with(".testnet"),
+            E_PARAMS,
+            "demo timings are only allowed on a .testnet account",
+        );
         Self {
             owner,
             launches: LookupMap::new(StorageKey::Launches),
@@ -374,6 +379,40 @@ impl SlowCook {
         self.owner.clone()
     }
 
+    /// Protocol minimums and defaults for creator-set timings (seconds), and whether this factory
+    /// accepts demo launches.
+    pub fn get_config(&self) -> near_sdk::serde_json::Value {
+        let s = |ms: u64| ms / 1000;
+        json!({
+            "owner": self.owner,
+            "demo_allowed": self.demo_allowed,
+            "unlock_margin_bps": UNLOCK_MARGIN_BPS as u64,
+            "minimums": {
+                "creator_lock_secs": s(MIN_CREATOR_LOCK_MS),
+                "creator_vest_secs": s(MIN_CREATOR_VEST_MS),
+                "hold_secs": s(MIN_HOLD_MS),
+                "poke_interval_secs": s(MIN_POKE_INTERVAL_MS),
+                "k_obs": MIN_K_OBS,
+                "trigger_secs": s(MIN_TRIGGER_MS),
+                "epoch_secs": s(MIN_EPOCH_MS),
+            },
+            "defaults": {
+                "creator_lock_secs": s(DEFAULT_CREATOR_LOCK_MS),
+                "creator_vest_secs": s(DEFAULT_CREATOR_VEST_MS),
+                "poke_interval_secs": s(DEFAULT_POKE_INTERVAL_MS),
+                "k_obs": DEFAULT_K_OBS,
+                "h_obs": MIN_HOLD_MS.div_ceil(DEFAULT_POKE_INTERVAL_MS),
+                "epoch_secs": s(DEFAULT_EPOCH_MS),
+            },
+            "demo_minimums": {
+                "creator_lock_secs": s(DEMO_MIN_CREATOR_LOCK_MS),
+                "creator_vest_secs": s(DEMO_MIN_CREATOR_VEST_MS),
+                "poke_interval_secs": 1,
+                "epoch_secs": 10,
+            },
+        })
+    }
+
     /// Solvency check (invariant I3): NEAR this contract owes, summed over every launch, versus its
     /// balance minus what is locked for storage.
     pub fn get_solvency(&self) -> near_sdk::serde_json::Value {
@@ -424,7 +463,7 @@ pub(crate) fn promise_ok() -> bool {
     env::promise_results_count() == 1 && env::promise_result_checked(0, 1024).is_ok()
 }
 
-fn validate(a: &CreateLaunchArgs, _demo_allowed: bool) -> Params {
+fn validate(a: &CreateLaunchArgs, demo_allowed: bool) -> Params {
     let bad = |m: &str| fail(E_PARAMS, m);
     if a.name.is_empty() || a.name.len() > 64 {
         bad("name must be 1..64 chars");
@@ -460,15 +499,21 @@ fn validate(a: &CreateLaunchArgs, _demo_allowed: bool) -> Params {
     {
         bad("commit/reveal must be 10s..30d");
     }
+    let poke_interval_ms = a
+        .poke_interval_secs
+        .map_or(DEFAULT_POKE_INTERVAL_MS, |s| s as u64 * 1000);
     let d = Params {
         tick_factor_bps: a.tick_factor_bps.unwrap_or(11_500),
         penalty_bps: a.penalty_bps.unwrap_or(500),
         band_bps: a.band_bps.unwrap_or(1_000),
-        k_obs: a.k_obs.unwrap_or(6),
-        h_obs: a.h_obs.unwrap_or(12),
+        k_obs: a.k_obs.unwrap_or(DEFAULT_K_OBS),
+        // Default hold: the shortest whole number of intervals covering MIN_HOLD_MS.
+        h_obs: a
+            .h_obs
+            .unwrap_or_else(|| MIN_HOLD_MS.div_ceil(poke_interval_ms.max(1)).min(100_000) as u32),
         r_bps: a.r_bps.unwrap_or(1_000),
-        epoch_ms: a.epoch_secs.unwrap_or(120) as u64 * 1000,
-        poke_interval_ms: a.poke_interval_secs.unwrap_or(10) as u64 * 1000,
+        epoch_ms: a.epoch_secs.map_or(DEFAULT_EPOCH_MS, |s| s as u64 * 1000),
+        poke_interval_ms,
         max_commits: a.max_commits.unwrap_or(500),
         creator_lock_ms: a
             .creator_lock_secs
@@ -495,6 +540,36 @@ fn validate(a: &CreateLaunchArgs, _demo_allowed: bool) -> Params {
     }
     if d.epoch_ms < 10_000 || d.poke_interval_ms < 1_000 {
         bad("epoch >= 10s, poke interval >= 1s");
+    }
+    if d.demo {
+        // Testnet demo: short timings, but still a real lock and a real vest.
+        if !demo_allowed {
+            bad("demo timings need a factory initialised with demo on a .testnet account");
+        }
+        if d.creator_lock_ms < DEMO_MIN_CREATOR_LOCK_MS
+            || d.creator_vest_ms < DEMO_MIN_CREATOR_VEST_MS
+        {
+            bad("demo launches need creator lock >= 30s and vest >= 10s");
+        }
+    } else {
+        if d.creator_lock_ms < MIN_CREATOR_LOCK_MS {
+            bad("creator_lock_secs must be >= 604800 (7 days)");
+        }
+        if d.creator_vest_ms < MIN_CREATOR_VEST_MS {
+            bad("creator_vest_secs must be >= 604800 (7 days)");
+        }
+        if d.poke_interval_ms < MIN_POKE_INTERVAL_MS {
+            bad("poke_interval_secs must be >= 60");
+        }
+        if d.k_obs < MIN_K_OBS || (d.k_obs as u64) * d.poke_interval_ms < MIN_TRIGGER_MS {
+            bad("k_obs must be >= 3 and k_obs * poke_interval >= 30 minutes");
+        }
+        if (d.h_obs as u64) * d.poke_interval_ms < MIN_HOLD_MS {
+            bad("h_obs * poke_interval must be >= 7 days");
+        }
+        if d.epoch_ms < MIN_EPOCH_MS {
+            bad("epoch_secs must be >= 3600");
+        }
     }
     if d.max_commits == 0 || d.max_commits > 500 {
         bad("max_commits must be 1..500");

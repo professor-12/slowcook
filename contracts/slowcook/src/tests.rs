@@ -796,26 +796,35 @@ fn creator_locked_initially() {
 }
 
 #[test]
-fn creator_unlocks_after_h_observations_at_or_above_clearing() {
+fn creator_unlocks_after_lock_and_vest_when_price_holds_above_margin() {
+    // Demo timings from H::args: 60 s lock, 60 s vest, hold of 4 x 10 s intervals.
     let (mut h, id) = traded();
-    for _ in 0..4 {
+    let near_r = h.c.launch(id).pool.near_reserve.0;
+    h.ctx("dave.near", near_r / 5, vec![]);
+    h.c.swap_near_for_token(U64(id), U128(0));
+    for _ in 0..12 {
         h.advance(10_000);
         h.poke(id);
     }
     h.ctx(CREATOR, 0, vec![]);
-    h.c.unlock_creator(U64(id));
+    let sent = h.c.unlock_creator(U64(id)).0;
     let l = h.c.launch(id);
+    assert_eq!(sent, l.creator_tokens);
     assert_eq!(l.creator_released, l.creator_tokens);
 }
 
 #[test]
 fn creator_streak_resets_when_price_drops() {
     let (mut h, id) = traded();
+    let near_r = h.c.launch(id).pool.near_reserve.0;
+    h.ctx("dave.near", near_r / 5, vec![]);
+    h.c.swap_near_for_token(U64(id), U128(0));
     for _ in 0..3 {
         h.advance(10_000);
         h.poke(id);
     }
-    h.sell(id, "alice.near", 100_000);
+    assert_eq!(h.c.launch(id).treasury.above_streak, 3);
+    h.sell(id, "alice.near", 200_000);
     h.advance(10_000);
     h.poke(id);
     assert_eq!(h.c.launch(id).treasury.above_streak, 0);

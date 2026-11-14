@@ -5,11 +5,13 @@
 //! Run: `cargo test -p slowcook-integration-tests -- --nocapture --test-threads 1`
 //!
 //! Timing uses the sandbox's real clock: commit/reveal windows are 10 s, poke interval 1 s.
+//! Those are demo timings, which the contract accepts only on a `.testnet` factory initialised with
+//! `demo: true`, so the factory lives at `factory.testnet` (a `testnet` TLA made by the registrar).
 
 use anyhow::Result;
 use futures::future::join_all;
 use near_workspaces::network::Sandbox;
-use near_workspaces::types::NearToken;
+use near_workspaces::types::{KeyType, NearToken, SecretKey};
 use near_workspaces::{Account, Contract, Worker};
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
@@ -39,7 +41,14 @@ struct Env {
 async fn setup() -> Result<Env> {
     let worker = near_workspaces::sandbox().await?;
     let root = worker.root_account()?;
-    let acc = root
+    let testnet = worker
+        .create_tla("testnet".parse()?, SecretKey::from_random(KeyType::ED25519))
+        .await?
+        .into_result()?;
+    root.transfer_near(testnet.id(), NearToken::from_near(600))
+        .await?
+        .into_result()?;
+    let acc = testnet
         .create_subaccount("factory")
         .initial_balance(NearToken::from_near(500))
         .transact()
@@ -48,7 +57,7 @@ async fn setup() -> Result<Env> {
     let factory = acc.deploy(&wasm("slowcook")).await?.into_result()?;
     factory
         .call("new")
-        .args_json(json!({ "owner": factory.id() }))
+        .args_json(json!({ "owner": factory.id(), "demo": true }))
         .transact()
         .await?
         .into_result()?;
@@ -83,6 +92,7 @@ fn args(total: u128, commit: u32, reveal: u32) -> Value {
         "total_supply": total.to_string(), "sale_bps": 6000, "lp_bps": 3000, "creator_bps": 1000,
         "p_min": P_MIN.to_string(), "commit_secs": commit, "reveal_secs": reveal,
         "k_obs": 2, "h_obs": 3, "r_bps": 1000, "epoch_secs": 10, "poke_interval_secs": 1,
+        "demo": true, "creator_lock_secs": 30, "creator_vest_secs": 10,
     })
 }
 
@@ -157,6 +167,14 @@ async fn reveal(env: &Env, a: &Account, id: u64, tick: u8, qty: u128) -> Result<
 
 async fn wait_until(env: &Env, id: u64, field: &str) -> Result<()> {
     let target = u(&launch(env, id).await?[field]) as u64;
+    wait_until_ms(env, target).await
+}
+
+async fn block_ms(env: &Env) -> Result<u64> {
+    Ok(env.worker.view_block().await?.timestamp() / 1_000_000)
+}
+
+async fn wait_until_ms(env: &Env, target: u64) -> Result<()> {
     loop {
         let now = env.worker.view_block().await?.timestamp() / 1_000_000;
         if now >= target {
@@ -353,13 +371,16 @@ async fn undersubscribed_burn_path() -> Result<()> {
 }
 
 /// Scripted dump: defend() blocked before trigger, fires once, then blocked by the epoch cap.
-/// Creator unlock is blocked while price is below clearing and allowed after it holds.
+/// Creator: blocked during the lock even after the price holds above clearing + 5%, then a
+/// partial release mid-vest, then the rest once fully vested.
 #[tokio::test]
 async fn dump_defend_epoch_cap_and_creator_unlock() -> Result<()> {
     let env = setup().await?;
     let creator = user(&env, "creator", 20).await?;
     let mut a = args(1_000_000, 10, 10);
     a["epoch_secs"] = json!(60);
+    a["creator_lock_secs"] = json!(90);
+    a["creator_vest_secs"] = json!(30);
     let (id, token) = create(&env, &creator, a, 3).await?;
     let whale = user(&env, "whale", 50).await?;
     let fish = user(&env, "fish", 50).await?;
@@ -455,7 +476,7 @@ async fn dump_defend_epoch_cap_and_creator_unlock() -> Result<()> {
     let r = defend().await?;
     assert!(err_contains(&r, "E_EPOCH_CAP"), "{:?}", r.failures());
 
-    // Price recovers (a buyer), holds at/above clearing for h_obs pokes -> creator unlock.
+    // Price recovers (a buyer) and holds above clearing + 5% for h_obs pokes.
     let buyer = user(&env, "buyer", 100).await?;
     let r = buyer
         .call(env.factory.id(), "swap_near_for_token")
@@ -469,17 +490,52 @@ async fn dump_defend_epoch_cap_and_creator_unlock() -> Result<()> {
         tokio::time::sleep(Duration::from_millis(1_300)).await;
         poke().await?.into_result()?;
     }
-    let r = creator
-        .call(env.factory.id(), "unlock_creator")
+    let unlock = || async {
+        creator
+            .call(env.factory.id(), "unlock_creator")
+            .args_json(json!({ "launch_id": id.to_string() }))
+            .max_gas()
+            .transact()
+            .await
+    };
+    let tre: Value = env
+        .factory
+        .view("get_treasury")
         .args_json(json!({ "launch_id": id.to_string() }))
-        .max_gas()
-        .transact()
-        .await?;
+        .await?
+        .json()?;
+    assert!(tre["treasury"]["above_streak"].as_u64().unwrap() >= 3);
+    let lock_end = u(&tre["creator_lock_ends_ms"]) as u64;
+    let vest_end = u(&tre["creator_vest_ends_ms"]) as u64;
+    let total = u(&tre["creator_tokens"]);
+    // (a) The price holds, but the lock is not over: rejected.
+    assert!(
+        block_ms(&env).await? < lock_end,
+        "test ran past the 90 s lock"
+    );
+    let r = unlock().await?;
+    assert!(err_contains(&r, "creator lock ends"), "{:?}", r.failures());
+    // (b) Mid-vest: only the vested part is released.
+    wait_until_ms(&env, lock_end + 10_000).await?;
+    let r = unlock().await?;
     assert!(r.is_success(), "unlock failed: {:?}", r.failures());
-    let l = launch(&env, id).await?;
+    let first = u(&r.json::<Value>()?);
+    assert!(
+        first > 0 && first < total,
+        "partial release {first} of {total}"
+    );
+    // (c) After the vest: the rest, and the creator holds exactly the allocation.
+    wait_until_ms(&env, vest_end).await?;
+    let r = unlock().await?;
+    assert!(r.is_success(), "unlock failed: {:?}", r.failures());
+    assert_eq!(first + u(&r.json::<Value>()?), total);
     assert_eq!(
         ft_balance(&env, &token, creator.id().as_str()).await?,
-        u(&l["creator_tokens"]) * ONE_TOKEN
+        total * ONE_TOKEN
+    );
+    println!(
+        "creator: locked, then {first} mid-vest, then {} more",
+        total - first
     );
     assert_eq!(solvency(&env).await?["solvent"], true);
     Ok(())

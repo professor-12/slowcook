@@ -149,6 +149,9 @@ fn production_defaults_meet_the_minimums() {
     assert!(p.epoch_ms >= MIN_EPOCH_MS);
     assert!(p.poke_interval_ms >= MIN_POKE_INTERVAL_MS);
     assert!(p.h_obs as u64 * p.poke_interval_ms >= MIN_HOLD_MS);
+    let cfg = h.c.get_config();
+    assert_eq!(cfg["minimums"]["creator_lock_secs"], 604_800);
+    assert_eq!(cfg["defaults"]["h_obs"], p.h_obs);
 }
 
 #[test]

@@ -38,7 +38,7 @@ Trading ◀──on_finalize_minted ok── Finalizing ◀──finalize (deman
    ├─ claim / refund_unrevealed (pull-based, per bidder)
    ├─ swap_near_for_token / ft_on_transfer (pool)
    ├─ poke ─▶ interval TWAP ─▶ streaks ─▶ defend (capped) ─▶ burn
-   └─ unlock_creator (after h_obs intervals at/above clearing)
+   └─ unlock_creator (after the ≥ 7-day lock; vested part only; last h_obs TWAPs ≥ clearing × 1.05)
 ```
 
 1. **`create_launch(args)`**, payable.
@@ -77,7 +77,11 @@ Trading ◀──on_finalize_minted ok── Finalizing ◀──finalize (deman
      - `below_streak ≥ k_obs` and spot below the floor (otherwise `E_TRIGGER`);
      - budget left in this epoch (otherwise `E_EPOCH_CAP`).
    - It then buys `min(budget, NEAR needed to reach clearing)` from the pool, burns what it bought, and resets the streak.
-8. **`unlock_creator`** requires `above_streak ≥ h_obs` (otherwise `E_LOCKED`). It then transfers the creator allocation.
+8. **`unlock_creator`** requires, otherwise `E_LOCKED`:
+   - `now ≥ finalized_ms + creator_lock_ms` (lock ≥ 7 days unless the launch is a labelled testnet demo);
+   - `above_streak ≥ h_obs`, where `poke` counts an interval only if its TWAP is ≥ `clearing × 1.05`;
+   - something newly vested: `creator_tokens × min(1, (now − lock_end) / creator_vest_ms) − creator_released > 0`.
+   It then transfers that amount. On a failed transfer the callback subtracts exactly that amount from `creator_released`.
 
 ## Why these choices (mechanism → failure prevented)
 

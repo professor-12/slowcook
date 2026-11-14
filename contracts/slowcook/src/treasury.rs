@@ -6,8 +6,12 @@
 //!   interval TWAPs were all below `clearing * (1 - band)` AND spot is still below that floor.
 //!   It spends at most `r_bps` of the treasury per epoch, never pushes spot above the clearing
 //!   price, and resets the streak, so the next defend needs `k_obs` fresh observations.
-//! - `unlock_creator` releases the creator allocation only after `h_obs` consecutive interval
-//!   TWAPs at or above the clearing price.
+//! - `unlock_creator` releases creator tokens only when all of these hold:
+//!   1. the creator lock is over (`finalized_ms + creator_lock_ms`, at least 7 days unless demo);
+//!   2. the last `h_obs` interval TWAPs were all at or above `clearing * (1 + 5%)` (the pool opens
+//!      exactly at clearing, so an untraded pool never counts as holding);
+//!   3. something new has vested: the allocation vests linearly over `creator_vest_ms` after
+//!      the lock, and each call sends only the vested amount not yet released.
 
 use crate::errors::*;
 use crate::launch::*;
@@ -20,6 +24,26 @@ use near_sdk::{env, near, NearToken};
 
 pub fn floor_price(l: &Launch) -> u128 {
     l.clearing_price * (10_000 - l.params.band_bps as u128) / 10_000
+}
+
+/// Interval TWAPs at or above this count towards the creator hold.
+pub fn hold_price(l: &Launch) -> u128 {
+    math::mul_div(l.clearing_price, math::BPS + UNLOCK_MARGIN_BPS, math::BPS).unwrap_or(u128::MAX)
+}
+
+pub fn creator_lock_end(l: &Launch) -> u64 {
+    l.finalized_ms + l.params.creator_lock_ms
+}
+
+/// Whole creator tokens vested by `now`: zero until the lock ends, then linear over the vest.
+pub fn creator_vested(l: &Launch, now: u64) -> u128 {
+    let start = creator_lock_end(l);
+    if l.status != Status::Finalized || now < start {
+        return 0;
+    }
+    let elapsed = (now - start).min(l.params.creator_vest_ms) as u128;
+    math::mul_div(l.creator_tokens, elapsed, l.params.creator_vest_ms as u128)
+        .unwrap_or(l.creator_tokens)
 }
 
 /// Budget left in the current epoch, rolling the epoch if it has expired. Mutates `t`.
@@ -52,13 +76,10 @@ impl SlowCook {
         let cum = l.pool.price_cumulative.0;
         let twap = cum.wrapping_sub(l.treasury.last_cumulative.0) / dt as u128;
         let floor = floor_price(&l);
+        let hold = hold_price(&l);
         let t = &mut l.treasury;
         t.below_streak = if twap < floor { t.below_streak + 1 } else { 0 };
-        t.above_streak = if twap >= l.clearing_price {
-            t.above_streak + 1
-        } else {
-            0
-        };
+        t.above_streak = if twap >= hold { t.above_streak + 1 } else { 0 };
         t.last_poke_ms = U64(now);
         t.last_cumulative = U128(cum);
         let obs = Observation {
@@ -158,22 +179,38 @@ impl SlowCook {
         ok
     }
 
-    /// Release the creator allocation once price has held at/above clearing for `h_obs` observations.
-    /// Returns the whole tokens sent.
+    /// Release the creator tokens vested so far, once the lock is over and the price has held above
+    /// clearing + 5% for the last `h_obs` intervals. Returns the whole tokens sent.
     pub fn unlock_creator(&mut self, launch_id: U64) -> U128 {
         let mut l = self.launch(launch_id.0);
         ensure(l.status == Status::Finalized, E_NOT_FINAL, "not finalized");
+        let now = now_ms();
+        let lock_end = creator_lock_end(&l);
+        ensure(
+            now >= lock_end,
+            E_LOCKED,
+            &format!(
+                "creator lock ends at {lock_end} ms ({} s left)",
+                lock_end.saturating_sub(now).div_ceil(1000)
+            ),
+        );
         ensure(
             l.treasury.above_streak >= l.params.h_obs,
             E_LOCKED,
-            "price has not held at/above clearing for h_obs observations",
+            &format!(
+                "price has held above clearing + 5% for {} of {} intervals",
+                l.treasury.above_streak, l.params.h_obs
+            ),
         );
-        let amount = l.creator_tokens - l.creator_released;
-        ensure(amount > 0, E_DUP, "already unlocked");
+        let amount = creator_vested(&l, now).saturating_sub(l.creator_released);
+        ensure(amount > 0, E_LOCKED, "nothing newly vested");
         l.creator_released += amount;
         events::emit(
             "creator_unlocked",
-            json!({ "launch_id": l.id, "creator": l.creator, "amount": U128(amount) }),
+            json!({
+                "launch_id": l.id, "creator": l.creator, "amount": U128(amount),
+                "released": U128(l.creator_released), "allocation": U128(l.creator_tokens),
+            }),
         );
         ext_token::ext(l.token_id.clone())
             .with_attached_deposit(NearToken::from_yoctonear(1))
@@ -181,7 +218,7 @@ impl SlowCook {
             .ft_transfer(
                 l.creator.clone(),
                 U128(amount * math::ONE_TOKEN),
-                Some("creator unlock".into()),
+                Some("creator vest".into()),
             )
             .then(
                 Self::ext(env::current_account_id())
@@ -217,6 +254,13 @@ impl SlowCook {
             };
         let spot = math::spot_price(l.pool.near_reserve.0, l.pool.token_reserve.0);
         let floor = floor_price(&l);
+        let vested = creator_vested(&l, now);
+        let (lock_end, vest_end) = if l.status == Status::Finalized {
+            let e = creator_lock_end(&l);
+            (e, e + l.params.creator_vest_ms)
+        } else {
+            (0, 0)
+        };
         let trigger_ready =
             l.status == Status::Finalized && t.below_streak >= l.params.k_obs && spot < floor;
         t.observations.reverse();
@@ -228,14 +272,15 @@ impl SlowCook {
             trigger_ready,
             epoch_remaining: U128(epoch_remaining),
             creator_unlockable: l.status == Status::Finalized
-                && l.creator_released < l.creator_tokens
-                && l.treasury.above_streak >= l.params.h_obs,
+                && now >= lock_end
+                && l.treasury.above_streak >= l.params.h_obs
+                && vested > l.creator_released,
             creator_tokens: U128(l.creator_tokens),
             creator_released: U128(l.creator_released),
-            creator_vested: U128(l.creator_tokens),
-            creator_lock_ends_ms: U64(l.finalized_ms),
-            creator_vest_ends_ms: U64(l.finalized_ms),
-            hold_price: U128(l.clearing_price),
+            creator_vested: U128(vested),
+            creator_lock_ends_ms: U64(lock_end),
+            creator_vest_ends_ms: U64(vest_end),
+            hold_price: U128(hold_price(&l)),
             creator_unlocked: l.creator_tokens > 0 && l.creator_released >= l.creator_tokens,
         }
     }

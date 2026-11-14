@@ -23,7 +23,10 @@ try {
   owner = await view<string>(factoryId, "get_owner");
 } catch {}
 if (!owner) {
-  const init = await call(factory, factoryId, "new", { owner: factoryId });
+  // Demo timings (short lock, fast keeper) are labelled per launch and only allowed on .testnet.
+  const demo = factoryId.endsWith(".testnet");
+  const init = await call(factory, factoryId, "new", { owner: factoryId, demo });
+  out.demo_allowed = demo;
   if (!init.ok) throw new Error(`init failed: ${init.error}`);
   out.init_tx = init.url;
   console.log(`initialised: ${init.url}`);

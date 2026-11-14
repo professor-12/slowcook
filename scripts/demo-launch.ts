@@ -88,6 +88,11 @@ const args = {
   p_min: P_MIN.toString(),
   commit_secs: COMMIT, reveal_secs: REVEAL,
   k_obs: 3, h_obs: 6, r_bps: 1000, epoch_secs: 120, poke_interval_secs: 10, penalty_bps: 500,
+  // Demo timings (testnet factory only; the launch page labels it DEMO). Production minimums:
+  // 7-day lock, 7-day vest, 7-day hold, 60 s pokes; see README "Launch parameters".
+  demo: true,
+  creator_lock_secs: Number(ENV.DEMO_LOCK_SECS ?? 900),
+  creator_vest_secs: Number(ENV.DEMO_VEST_SECS ?? 180),
 };
 if (RESUME) {
   launchId = RESUME;

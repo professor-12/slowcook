@@ -142,13 +142,23 @@ Every change from `SLOWCOOK-BRIEF.md` is listed in section 9 with its reason.
 
 ## 6. Creator lock
 
-- `unlock_creator` needs `h_obs` consecutive interval TWAPs ≥ clearing. The demo default is 12; tests use 3–4.
-- The pool opens at the clearing price, so with no trading the TWAP equals clearing and the streak grows.
-  - So `h_obs × poke_interval` is effectively a *minimum* lock time (demo: 12 × 10 s).
-  - Any interval below clearing resets the streak.
-- **Attack.** A creator buys to hold the TWAP at or above clearing for H intervals, then dumps.
-  - Doing so requires buying at or above clearing for the whole period. That money goes into locked LP and does not come back.
-  - Mitigation: a large H (days in production). Stated as a limit.
+**Before 2026-11-14 (bypass, found in review).** `unlock_creator` needed `h_obs` consecutive interval TWAPs ≥ clearing, with no time lock and no lower bound on `h_obs` or the poke interval.
+- The pool opens exactly at clearing, so with no trading every TWAP equals clearing and counted as holding.
+- With `h_obs = 1` and a 1 s poke interval, the creator could take the whole allocation about 1 s after finalize. The property test in `creator_lock_tests.rs` reproduced it (`verification/creator-lock-red.txt`).
+- Launches 0 and 1 on the old factory (`slowcook-0dd752.testnet`) ran this code. Their creators were our demo accounts.
+
+**Now.** A release needs all three:
+1. **Time lock.** `now ≥ finalized_ms + creator_lock_ms`, with `creator_lock_ms ≥ 7 days` (`MIN_CREATOR_LOCK_MS`).
+2. **Price hold with a margin.** The last `h_obs` interval TWAPs are all ≥ `clearing × 1.05` (`UNLOCK_MARGIN_BPS = 500`). The pool resting at its opening price no longer counts. `h_obs × poke_interval ≥ 7 days` (`MIN_HOLD_MS`) and `poke_interval ≥ 60 s`.
+3. **Linear vest.** The vested amount is `creator_tokens × min(1, (now − lock_end) / creator_vest_ms)`, with `creator_vest_ms ≥ 7 days`. Each call sends `vested − released`. A failed transfer returns exactly that amount.
+
+Floor Keeper minimums were added at the same time: `k_obs ≥ 3`, `k_obs × poke_interval ≥ 30 min`, `epoch ≥ 1 h`.
+
+**Demo timings.** Testnet demos need minutes, not weeks. A factory can accept `demo: true` launches only if it was initialised with `demo: true` on a `.testnet` account (checked in `new`). Demo launches still need a lock ≥ 30 s and a vest ≥ 10 s, and every view exposes `params.demo`.
+
+**Attack that remains.** A creator buys to hold the TWAP above clearing × 1.05 for the hold window, then sells what has vested.
+- They must keep the price up for at least 7 days, with that money going into locked LP. After that they receive only the vested share, at most `1/vest` of the allocation per unit of time.
+- The lock and vest bound the speed of a dump; they do not prevent one. Stated as a limit.
 
 ## 7. Token deployment: embedded wasm (testnet) vs global contract (mainnet)
 
@@ -178,6 +188,7 @@ Every change from `SLOWCOOK-BRIEF.md` is listed in section 9 with its reason.
 | Non-reveal penalty 1% | 5% (configurable ≤ 20%) | It prices the free option not to reveal (§2). |
 | `poke` records spot | `poke` records an interval TWAP from a swap-time accumulator | Cherry-picked spot samples can be manipulated cheaply (§5). |
 | `defend` on the TWAP condition only | TWAP **and** spot below floor; buys only up to clearing | Prevents buying into a restored price and prevents overshoot (§5). |
+| Creator unlock after `h` intervals ≥ clearing | 7-day minimum lock from finalize, hold ≥ clearing × 1.05 for ≥ 7 days, then a linear vest ≥ 7 days; protocol minimums on `k_obs`, `h_obs`, epoch and poke interval | The old rule let a creator unlock seconds after launch with `h_obs = 1` (§6). |
 | Epoch counted in blocks | Epoch and poke interval in milliseconds of block time | NEAR block time varies; time-based windows match the TWAP math. |
 | Penalties: unspecified | Go to the treasury; no penalty in failed launches | Penalties fund price defence; nothing to protect when nothing was sold. |
 | Claims: unspecified failure handling | Callback records `tokens_owed`; `claim` retries | An `ft_transfer` failure must not strand tokens. |
