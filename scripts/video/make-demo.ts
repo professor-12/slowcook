@@ -19,7 +19,7 @@ const PIPER = process.env.PIPER_BIN ?? "piper";
 const VOICE = process.env.PIPER_VOICE ?? "";
 const FONTS = join(ROOT, "apps", "web", "app", "fonts");
 const W = 1280, H = 720;
-const LEAD = 0.5, GAP = 0.35, TAIL = 0.7; // seconds of silence: scene start, between lines, scene end
+const LEAD = 0.45, GAP = 0.3, TAIL = 0.55; // seconds of silence: scene start, between lines, scene end
 
 if (!VOICE || !existsSync(VOICE)) throw new Error("set PIPER_VOICE to a Piper .onnx voice model");
 rmSync(WORK, { recursive: true, force: true });
@@ -43,7 +43,7 @@ for (const scene of SCENES) {
   t += LEAD;
   scene.lines.forEach((line, i) => {
     const wav = join(WORK, `${scene.id}-${i}.wav`);
-    run(PIPER, ["--model", VOICE, "--output_file", wav, "--length_scale", "1.04"], line.say);
+    run(PIPER, ["--model", VOICE, "--output_file", wav, "--length_scale", "0.97"], line.say);
     const d = dur(wav);
     caps.push({ start: t, end: t + d, text: line.cap });
     parts.push(wav);
@@ -115,10 +115,10 @@ function terminalHtml(id: "launch" | "dump", secs: number): string {
   const title = id === "launch" ? "Real launch on NEAR testnet · scripts/demo-launch.ts" : "Scripted sell-off and Floor Keeper · scripts/demo-dump.ts";
   return `<!doctype html><html><head><meta charset="utf-8"><style>${fontCss}
   body{background:#f5f7f6;display:grid;place-items:center}
-  .win{width:1180px;height:640px;background:#0b1a14;border-radius:16px;box-shadow:0 12px 32px -8px rgb(11 26 20/.3);display:grid;grid-template-rows:auto 1fr;overflow:hidden}
+  .win{width:1220px;height:660px;background:#0b1a14;border-radius:16px;box-shadow:0 12px 32px -8px rgb(11 26 20/.3);display:grid;grid-template-rows:auto 1fr;overflow:hidden}
   .bar{display:flex;gap:8px;align-items:center;padding:14px 18px;background:#13261e;color:#a9b8b1;font-size:18px}
   .dot{width:12px;height:12px;border-radius:50%;background:#2b3f36}
-  .term{padding:18px 24px;font-family:M;font-size:16.5px;line-height:1.5;color:#d8e2dd;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
+  .term{padding:18px 24px;font-family:M;font-size:18.5px;line-height:1.45;color:#d8e2dd;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
   .l{white-space:pre;overflow:hidden;text-overflow:ellipsis;opacity:0;animation:in .18s linear forwards}
   .cmd{color:#fff;font-weight:600}.hd{color:#8fd3b2}.ok{color:#d8e2dd}.ok::first-letter{color:#19c37d}.bad{color:#ffb4a8}.info{color:#a9b8b1}.note{color:#e6c07b}
   @keyframes in{to{opacity:1}}

@@ -25,7 +25,7 @@ export interface Scene {
 const same = (s: string): Line => ({ say: s, cap: s });
 
 export const SCENES: Scene[] = [
-  { id: "title", visual: { kind: "card", id: "title" }, lines: [], minSecs: 2.5 },
+  { id: "title", visual: { kind: "card", id: "title" }, lines: [], minSecs: 2.2 },
   {
     id: "problem",
     visual: { kind: "page", path: "/", action: "hero" },
@@ -42,8 +42,7 @@ export const SCENES: Scene[] = [
     id: "how",
     visual: { kind: "page", path: "/", action: "steps" },
     lines: [
-      same("Bids are sealed: only a hash goes on-chain."),
-      same("When bidding closes, everyone reveals, and the contract sets one clearing price that every winner pays."),
+      same("Bids are sealed. When bidding closes, everyone reveals, and the contract sets one clearing price that every winner pays."),
       same("Unsold supply is burned, and trading opens at exactly that price."),
     ],
   },
@@ -51,7 +50,7 @@ export const SCENES: Scene[] = [
     id: "sim",
     visual: { kind: "page", path: "/why/", action: "why" },
     lines: [
-      same("We simulated the same two hundred wallets through both designs, a thousand times."),
+      same("In a simulation, we ran the same two hundred wallets through both designs, a thousand times."),
       {
         say: "On a bonding curve, bots and a bundler take forty percent of supply, and make over four hundred percent by dumping.",
         cap: "On a bonding curve, bots and a bundler take 40% of supply, and make over 400% by dumping.",
@@ -60,7 +59,6 @@ export const SCENES: Scene[] = [
         say: "In Slow Cook they take eleven percent, and lose about nine percent, even when they can see all retail demand.",
         cap: "In SlowCook they take 11%, and lose about 9%, even when they can see all retail demand.",
       },
-      same("That part is a simulation, and the method is in the repo."),
     ],
   },
   {
@@ -81,10 +79,7 @@ export const SCENES: Scene[] = [
         say: "All six hundred thousand tokens sold at one clearing price, and the wallet that bid seven times higher paid exactly the same price per token.",
         cap: "All 600,000 tokens sold at one clearing price, and the wallet that bid 7× higher paid exactly the same price per token.",
       },
-      {
-        say: "The pool opened at that price with five point eight six NEAR, and our model predicted the result before launch, to the last yocto NEAR.",
-        cap: "The pool opened at that price with 5.86 NEAR, and our model predicted the result before launch, to the last yoctoNEAR.",
-      },
+      same("The pool opened at exactly that price, and the result matched our model's prediction made before launch."),
     ],
   },
   {
@@ -93,26 +88,30 @@ export const SCENES: Scene[] = [
     lines: [
       same("Then we scripted a sell-off. Six holders dumped, and the price fell to about a quarter of the clearing price."),
       {
-        say: "After three time-weighted intervals below the floor, the Floor Keeper bought back and burned about a hundred and three thousand tokens, using exactly its ten percent cap.",
-        cap: "After three time-weighted intervals below the floor, the Floor Keeper bought back and burned ~103,000 tokens, using exactly its 10% cap.",
+        say: "After three time-weighted intervals below the floor, the Floor Keeper bought back and burned tokens, using exactly its ten percent cap.",
+        cap: "After three time-weighted intervals below the floor, the Floor Keeper bought back and burned tokens, using exactly its 10% cap.",
       },
+      same("A second buyback in the same epoch was refused."),
     ],
   },
   {
     id: "keeper",
     visual: { kind: "page", path: "/launch/?id=1", action: "launch-keeper" },
-    lines: [same("A second buyback in the same epoch was refused."), same("The creator's tokens stayed locked until the price recovered and held.")],
+    lines: [
+      {
+        say: "The live page shows a hundred and three thousand tokens bought back and burned.",
+        cap: "The live page shows 103,215 tokens bought back and burned.",
+      },
+      same("The creator's tokens stayed locked until the price recovered and held."),
+    ],
   },
   {
     id: "end",
     visual: { kind: "card", id: "end" },
     lines: [
-      {
-        say: "Every rule is a contract method with a test: fifty-eight contract tests, a thousand random auctions, and C I on every push.",
-        cap: "Every rule is a contract method with a test: 58 contract tests, 1,000 random auctions, and CI on every push.",
-      },
-      { say: "Try the live demo and the repo linked below. Slow Cook was built at NEAR HACKATHON.", cap: "Try the live demo and the repo linked below. SlowCook was built at NEAR HACKATHON." },
+      same("Every rule is a contract method with a test, and CI runs on every push."),
+      { say: "Live demo and code are linked below. Built at NEAR HACKATHON.", cap: "Live demo and code are linked below. Built at NEAR HACKATHON." },
     ],
-    minSecs: 9,
+    minSecs: 8,
   },
 ];

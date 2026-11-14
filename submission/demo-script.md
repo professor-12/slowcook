@@ -1,3 +1,21 @@
+# Demo video
+
+**Rendered:** `submission/video/slowcook-demo.mp4`, 2:02, 1280×720 H.264/AAC, about 6.9 MB (git-ignored). Captions are burned in; the separate caption file is `submission/video/slowcook-demo.en.srt`.
+
+**Regenerate:**
+```bash
+PIPER_BIN=<venv>/bin/piper PIPER_VOICE=<path>/en_US-joe-medium.onnx node scripts/video/make-demo.ts
+```
+
+**How it is made**
+- **Voice:** synthetic, generated locally with Piper using the CC0 "joe" voice. Say so if asked.
+- **Footage:** headless recordings of the live site, plus two terminal cards that replay real lines from the launch 1 and dump runs. Omitted lines are marked `[…]`.
+- **Narration and sources:** `scripts/video/narration.ts`. Every figure there has a source comment.
+
+**Scenes:** title → problem (home) → how it works (home) → SIMULATED results (/why) → real launch (terminal) → clearing (launch 1 page) → sell-off and Floor Keeper (terminal) → live result (launch 1 page) → tests and links (end card).
+
+---
+
 # Demo video script (~2 min)
 
 **What to show:** the live site (https://web-omega-dun-65.vercel.app), launch 1 at https://web-omega-dun-65.vercel.app/launch/?id=1 ("SlowCook Deep Pool"), plus a terminal.

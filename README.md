@@ -230,6 +230,7 @@ Full threat model: [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md).
 - **Tools:** cargo-near 0.22.0, near-cli-rs 0.30.1, Node 24, pnpm.
 - **Templates:** none. The token wraps `near-contract-standards`' `FungibleToken`.
 - **AI:** built with substantial assistance from **Claude Code** (Anthropic), covering research, contract code, tests, simulator, web app and docs, with human direction. All results in this README come from runs logged in `verification/` and `results/`.
+- **Demo video:** the voiceover is synthetic, generated locally with [Piper](https://github.com/OHF-Voice/piper1-gpl) using the CC0 "joe" voice. The footage is real recordings of the live site and real testnet run logs. Generator: `scripts/video/make-demo.ts`; captions: `submission/video/slowcook-demo.en.srt`.
 
 ## Related projects (Q-015)
 
