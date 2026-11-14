@@ -12,7 +12,7 @@
 | 2 | R3 design decisions + Gate R | done | `research/03-design-decisions.md` |
 | 3 | R4 tech verification: global contracts, storage cost, Ref testnet, Intents, RPC | done | `research/02-tech-verification.md` |
 | 4 | Token contract (NEP-141, mint at finalize, burn, auto-register) | done | 4 unit tests |
-| 5 | SlowCook contract: factory, commit/reveal, finalize, claims, pool, Floor Keeper, creator lock | done | 51 unit tests |
+| 5 | SlowCook contract: factory, commit/reveal, finalize, claims, pool, Floor Keeper, creator lock | done | 62 unit tests (66 with property and parity) as of 2026-11-14 |
 | 6 | Property tests (I1–I3, I6) | done | `proptests.rs` |
 | 7 | TS model + parity (1000 pure-math cases, 100 full-flow cases) | done | `parity_tests.rs` |
 | 8 | Simulator, 1000 seeds | done | `sim/README.md`, `results/sim-*-SIMULATED.*` |

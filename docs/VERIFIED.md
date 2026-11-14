@@ -37,7 +37,7 @@ Every row was checked on **2026-11-09** unless it says otherwise.
 
 | Fact | Value | Method |
 |---|---|---|
-| Factory wasm size | 306,187 bytes | `cargo near build non-reproducible-wasm --no-abi`, 2026-11-09 |
+| Factory wasm size | 306,187 bytes on 2026-11-09; 313,011 bytes after the creator-lock fix (commit `5ad4575`) | `cargo near build non-reproducible-wasm --no-abi`, 2026-11-09 and 2026-11-14 |
 | Token wasm size | 158,654 bytes | same |
 | Contract method names and argument shapes used in README/scripts | `create_launch{args}`, `commit{launch_id,hash_hex}`, `reveal{launch_id,tick,qty,salt_hex}`, `finalize{launch_id}`, `claim{launch_id}`, `refund_unrevealed{launch_id,bidder}`, `swap_near_for_token{launch_id,min_out}`, `ft_on_transfer` msg `{"launch_id","min_out"}`, `poke/defend/unlock_creator/flush_burn{launch_id}`; views `get_launch{id}`, `list_launches{from,limit}`, `get_buckets{id}`, `get_tick_prices{id}`, `get_bid{launch_id,account_id}`, `get_clearing{id}`, `get_pool{launch_id}`, `quote{launch_id,side,amount}`, `get_treasury{launch_id}`, `get_solvency{}` | Read in source (`contracts/slowcook/src/*.rs`) and exercised by the sandbox tests and scripts |
-| Testnet accounts (created by the agent, faucet-funded) | factory `slowcook-0dd752.testnet`; demo creator `sc-creator-b44c88.testnet`; demo funder `sc-bidders-da9146.testnet` | RPC `view_account` |
+| Testnet accounts (created by the agent, faucet-funded) | factory `slowcook-674040.testnet` (fixed contract, 2026-11-14; first factory `slowcook-0dd752.testnet`, pre-fix); demo creator `sc-creator-b44c88.testnet`; demo funder `sc-bidders-da9146.testnet` | RPC `view_account` |

@@ -74,7 +74,7 @@ Targets from the standard, with current status (`docs/design/qa-report.md`):
   - FAQPage structured data: done;
   - robots.txt: done;
   - Open Graph image (1200×630): built and switched on once `NEXT_PUBLIC_SITE_URL` is set;
-  - canonical and sitemap: TODO once the hosted URL is known.
+  - canonical and sitemap: done once the hosted URL was known (per-page canonical; `sitemap.xml`).
 - **Motion:** level 2 on marketing pages, level 1 on the launch page and forms.
 - **Error monitoring:** none. Unknown, ask.
 
@@ -101,9 +101,9 @@ Dark mode (the standard says ship it only if PRD asks), internationalisation, ma
 
 ## Number sources
 Every number shown in the UI:
-- **Launch 1 figures:** `results/launch-1-2026-11-12T07-16-28-408Z.json` (1 price, 11 winning bids, 7× bid, 600,000 sold, 0 burned, 5.86 NEAR pool, 0.1837 NEAR for 9,409 tokens).
-- **Dump and defend figures:** `results/dump-1-2026-11-12T07-21-36-824Z.json` (0.5929 NEAR, 103,215 tokens, epoch-cap refusal, release after 6 intervals).
-- **"0 yocto" difference:** `onchain_matches_prediction` in the launch 1 log.
+- **Launch 0 figures** (factory `slowcook-674040.testnet`, 2026-11-14): `results/launch-0-2026-11-14T01-51-38-296Z.json` (1 price, 11 winning bids, 7× bid, 600,000 sold, 0 burned, 5.86 NEAR pool, 0.1837 NEAR for 9,409 tokens).
+- **Dump, defend and creator-lock figures:** `results/dump-0-2026-11-14T02-08-47-558Z.json` (0.5929 NEAR, 103,215 tokens, epoch-cap refusal, release refused during the lock, 61,937 then 38,063 vested).
+- **"0 yocto" difference:** `onchain_matches_prediction` in the launch 0 log.
 - **Test counts:** `verification/test-report.md` §1–2.
 - **SIMULATED figures:** `results/sim-summary-SIMULATED.json`.
 - **Create-form costs:** `research/03-design-decisions.md` §7 (token code 158,654 bytes at 1e19 yocto per byte).
