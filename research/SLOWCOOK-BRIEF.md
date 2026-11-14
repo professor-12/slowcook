@@ -1,6 +1,6 @@
 # SLOWCOOK: Full Build Brief for the Coding Agent
 
-**Lead:** Partner A. **Tracks:** `memecoins` (primary), `defi`. Read `COMMON-RULES.md` first; its guardrails override anything here.
+**Lead:** Emmanuel (@professor-12). **Tracks:** `memecoins` (primary), `defi`. Read `COMMON-RULES.md` first; its guardrails override anything here.
 
 > One sentence: **SlowCook is a NEAR memecoin launchpad where being first is worthless. Everyone pays one clearing price set by sealed bids, unsold supply burns, and a rule-bound treasury defends that price after launch.**
 

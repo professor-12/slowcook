@@ -272,12 +272,9 @@ NEAR HACKATHON rule Q-015: a person may be on **at most 2** submissions, and eac
 
 | Member | Role in SlowCook | Other NEAR HACKATHON entry |
 |---|---|---|
-| Partner A | Lead | **[to confirm: "none", or project name + repo URL]** |
+| Emmanuel ([@professor-12](https://github.com/professor-12)) | Lead and sole member | None |
 
-- The project owner is **not** a SlowCook member. They already lead two entries, so they are at the limit:
-  - **FRONTIER**;
-  - an invoice-clearing project (https://github.com/willy264/near).
-- SlowCook is an independent submission with its own repo and code.
+SlowCook is an independent submission with its own repo and code.
 
 ## License
 

@@ -1,6 +1,6 @@
-# COMMON RULES: read first, applies to all three projects (SlowCook, FRONTIER, Veil)
+# COMMON RULES: read first
 
-This file is copied into every project repo as `docs/COMMON-RULES.md`. Each project brief (SLOWCOOK-BRIEF.md, FRONTIER-BRIEF.md, VEIL-BRIEF.md) builds on it.
+The project brief (`research/SLOWCOOK-BRIEF.md`) builds on this file.
 
 ## 1. Event facts (verified 2026-11-08; re-verify on day 1)
 - **Event:** NEAR HACKATHON, https://nearhackathon.com. Rules: https://nearhackathon.com/HACKATHON.md. **Re-read HACKATHON.md before submitting**; it says rules can change.
@@ -16,11 +16,7 @@ This file is copied into every project repo as `docs/COMMON-RULES.md`. Each proj
   - the form at https://nearhackathon.com/#apply (or the API in HACKATHON.md), with a mainnet NEAR payout account.
   - One submission per repo. Edits after submission go through the request-changes page.
 - **Q-015, two-project limit:** one person may enter **at most 2 projects**. They must be independent, and each README names the other.
-  - **Team lead assignment:**
-    - FRONTIER: the owner (who also leads an invoice-clearing project: https://github.com/willy264/near).
-    - SlowCook: Partner A.
-    - Veil: Partner B.
-  - **A person must not appear as a team member on more than 2 submissions.** Partners should not list the owner as a member unless the owner is within their limit.
+  - **A person must not appear as a team member on more than 2 submissions.**
   - Every README has a "Related projects" section naming the projects its members are also in.
 - **Q-005 disclosure:** list every library, template and AI coding tool used (e.g. "built with assistance from Claude Code / Codex") in the README.
 - **Intents:** there is no testnet for NEAR Intents (Q-007). Mainnet costs are not reimbursed. Testnet-only projects are eligible (Q-010). No integration is mandatory (Q-011).

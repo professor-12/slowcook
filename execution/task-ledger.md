@@ -2,7 +2,7 @@
 
 - Started: 2026-11-09 15:06 UTC.
 - Deadline: 2026-11-14 23:59 UTC, about 129 h from the start.
-- Lead: Partner A.
+- Lead: Emmanuel (@professor-12), sole member.
 - Mode: the agent works autonomously and the human supplies missing inputs at the end.
 
 | # | Task | Status | Evidence |
@@ -94,4 +94,6 @@ About 64 hours remain to the deadline.
   - 66 + 4 contract tests with `PROPTEST_CASES=1000`, 4 sandbox tests, CI run 43542452926 green;
   - fresh factory `slowcook-674040.testnet` (code hash = build), launch 0 deep pool, dump/defend, creator release refused during the lock, 61,937 mid-vest, 38,063 after;
   - README (parameters table, security-fix section, new evidence, old launches labelled pre-fix), site, test report, QA report, video script and terminal excerpts.
-- **Needs the human:** a yes before moving the `hackathon-submission` tag (force-push); re-post the video if the X post should show the fix.
+- **Tag:** moved to the fix with the human's yes (2026-11-14).
+- **Q-015:** sole member, Emmanuel (@professor-12), no other entry. The section about other people's entries was removed at the human's request.
+- **Human does:** the form and the X post.
