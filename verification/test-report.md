@@ -100,7 +100,7 @@ test result: ok. 4 passed; 0 failed; ... finished in 161.58s
 **Outcome**
 - **Clearing price:** **2,313,060,765,625,000,000 yocto/token** (tick 6).
 - **Supply:** filled 599,999 of 600,000. Burned 3: 1 token of pro-rata dust plus 2 from flooring the LP and creator shares. Token `ft_total_supply` = 999,997 × 10^18.
-- **Sniper** (`b0`, tick 20, about 5× the clearing price) paid **0.0424 NEAR for 18,330 tokens**: exactly clearing × 18,330. Claim: [bZgHTwYr…](https://testnet.nearblocks.io/txns/bZgHTwYrGA4HM8Joz5GHWXvfxgMP6tYcTymxT79VwBf).
+- **Sniper** (`b0`, tick 20, about 7× the clearing price, since 1.15^14 ≈ 7.08) paid **0.0424 NEAR for 18,330 tokens**: exactly clearing × 18,330. Claim: [bZgHTwYr…](https://testnet.nearblocks.io/txns/bZgHTwYrGA4HM8Joz5GHWXvfxgMP6tYcTymxT79VwBf).
 - `every_winner_paid_clearing_price: true`.
 - **Losing bids** below the clearing tick (b1, b7, b8) were refunded 0.36 NEAR in full. Example: [AjaxVcSQ…](https://testnet.nearblocks.io/txns/AjaxVcSQVJyK6zD6nuPCUSU3o1DQgVnG87rKXaDwb8vL).
 - **No-show** `b11` was penalised 0.0180 NEAR (5% of 0.36) into the treasury: [FsdkyHFZ…](https://testnet.nearblocks.io/txns/FsdkyHFZGzMUbjj9qQWgTL2DoyeEQnDLz7nQEYwmexiS).

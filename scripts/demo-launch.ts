@@ -123,7 +123,7 @@ launch = await view(FACTORY, "get_launch", { id: launchId });
 console.log(`   launch ${launchId}: token ${launch.token_id}, phase ${launch.phase}`);
 const prices: string[] = await view(FACTORY, "get_tick_prices", { id: launchId });
 
-// 3. Sealed bids. A spread of limits; one "sniper" bids ~5x above everyone else; one wallet will not reveal;
+// 3. Sealed bids. A spread of limits; one "sniper" bids at tick 20, far above everyone else; one wallet will not reveal;
 //    one tries a wrong salt first. Deposits are OVER% above cost so the deposit doesn't reveal the bid.
 console.log(`\n== 3. ${N} sealed commits (only hashes go on-chain)`);
 if (prices.some((p, i) => BigInt(p) !== tickPrices(P_MIN, FACTOR)[i])) throw new Error("on-chain tick prices differ from the plan");

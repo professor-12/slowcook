@@ -109,7 +109,7 @@ Launch 0 token: `slow-0.slowcook-0dd752.testnet`.
 | 12 wallets commit sealed bids | Bid view shows `tick=null qty=null`; only the deposit is visible | [create_launch](https://testnet.nearblocks.io/txns/BRWxRMsAb1HeWKDFLUbmQ6i9Z8ms2ScatNrfuzHQ4ykP) · [a commit](https://testnet.nearblocks.io/txns/dKd9kguwzDQadd6nTDk2uws61h3NmKUKzbPaJyEzFHL) |
 | Reveal with a wrong salt | Rejected `E_HASH` | [tx](https://testnet.nearblocks.io/txns/F6niuojx8Ebn6BXaix1K161Zxg4fB2wf22kKX6NcgoBb) |
 | `finalize` | One clearing price, tick 6 = 2.313e-6 NEAR/token; 599,999 of 600,000 sold; 3 tokens of rounding dust burned | [tx](https://testnet.nearblocks.io/txns/HMH1GLb3rhSq3AYaihM5gfCWKC6dfZeMVXYmBfSZ5if4) |
-| The "sniper" (bid ~5× higher) claims | Paid exactly clearing × 18,330 = 0.0424 NEAR, the same price as everyone | [tx](https://testnet.nearblocks.io/txns/bZgHTwYrGA4HM8Joz5GHWXvfxgMP6tYcTymxT79VwBf) |
+| The "sniper" (bid ~7× above clearing) claims | Paid exactly clearing × 18,330 = 0.0424 NEAR, the same price as everyone | [tx](https://testnet.nearblocks.io/txns/bZgHTwYrGA4HM8Joz5GHWXvfxgMP6tYcTymxT79VwBf) |
 | Losing bid claims | Full 0.36 NEAR refund | [tx](https://testnet.nearblocks.io/txns/AjaxVcSQVJyK6zD6nuPCUSU3o1DQgVnG87rKXaDwb8vL) |
 | Unrevealed bid | 5% penalty → treasury | [tx](https://testnet.nearblocks.io/txns/FsdkyHFZGzMUbjj9qQWgTL2DoyeEQnDLz7nQEYwmexiS) |
 | Creator unlock right after launch | `E_LOCKED` | [tx](https://testnet.nearblocks.io/txns/6imfP3nqDpeSh9aiyUucVBsUcMSmjkLB5Kj5TBevcLfG) |
