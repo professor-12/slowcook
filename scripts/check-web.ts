@@ -88,7 +88,8 @@ async function scrollThrough(page: Page) {
   await page.waitForTimeout(500);
 }
 
-const NET_FLAP = /ERR_NETWORK_CHANGED|ERR_INTERNET_DISCONNECTED|ERR_CONNECTION_RESET|ERR_NAME_NOT_RESOLVED/;
+// Network problems on the checking machine, not the site: retry the page once.
+const NET_FLAP = /ERR_NETWORK_CHANGED|ERR_INTERNET_DISCONNECTED|ERR_CONNECTION_RESET|ERR_NAME_NOT_RESOLVED|goto: TimeoutError/;
 /** Open a page; if the local network flapped during the load, retry once (counts as a site error only if it repeats). */
 async function openPage(browser: Browser, c: Check, width: number, reduced: boolean) {
   const first = await openPageOnce(browser, c, width, reduced);
@@ -128,10 +129,15 @@ for (const c of CHECKS) {
   let wallet = "skipped";
   if (c.name === "home") {
     await page.getByRole("button", { name: "Connect wallet" }).first().click().catch(() => {});
-    await page.waitForTimeout(4000);
-    // near-connect renders its selector as a .hot-connector-popup element listing wallets
-    const popup = page.locator(".hot-connector-popup");
-    wallet = (await popup.count()) > 0 && (await popup.getByText("Select wallet").count()) > 0 ? "selector opened" : "no selector visible";
+    // near-connect renders its selector as a .hot-connector-popup element listing wallets. It loads
+    // the connector script and fetches the wallet manifest first: 2.4 to 5.0 s measured on a slow link.
+    const opened = await page
+      .locator(".hot-connector-popup")
+      .getByText("Select wallet")
+      .first()
+      .waitFor({ timeout: 20_000 })
+      .then(() => true, () => false);
+    wallet = opened ? "selector opened" : "no selector visible";
     if (wallet !== "selector opened") problems.push("wallet selector did not open");
     await page.reload({ waitUntil: "networkidle" });
   }

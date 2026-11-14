@@ -296,7 +296,9 @@ DEMO_BUDGET_NEAR=1.3 DEMO_TICKS=6,7,8 DEMO_OVERDEPOSIT_PCT=10 DEMO_MIN_POOL_NEAR
 | [E2pHNUKM…](https://testnet.nearblocks.io/txns/E2pHNUKMADb7UDzCZmHUknFGs3pMiye6dNTYVLDooaBe) | Buy, 0.1 NEAR | 4,205.13 DEEP |
 
 - **Wallet error after sending.** Each time, Meteor's popup showed "Something went wrong while completing the request: Cannot read properties of undefined (reading 'name')" *after* broadcasting. The request we send uses the connector's action format, which Meteor's executor passes through unchanged (`if ("type" in G) return G`), so the error is inside Meteor's popup app. Not reproduced with another wallet.
-- **Fix on our side (commit after `3810315`).** The page used to call any non-contract wallet error "Not done", which was false here. It now says the wallet may still have sent the transaction and refreshes the on-chain figures after any error.
+- **Fix on our side (`9dcb406`).** The page used to call any non-contract wallet error "Not done", which was false here. It now says the wallet may still have sent the transaction and refreshes the on-chain figures after any error. CI passed and Vercel deployed it (GitHub status "Deployment has completed", 07:42:57 UTC); the hosted chunks contain the new message.
+- **Hosted re-check after that deploy** (`results/web-check-2026-11-14T08-40-23-823Z.json`): 5/5 pages pass their content checks, the wallet selector opens (Meteor listed), axe 0 violations. The matrix gave 57/60: the 3 failures were `net::ERR_NETWORK_CHANGED` on this machine, whose network kept changing after a reboot. Those 3 combinations (`/` at 768 px, `/launch/?id=0` at 375 px reduced motion, `/why/` at 768 px reduced motion) were re-loaded separately: HTTP 200, 0 px overflow, 0 console errors.
+- **Checker fix.** `check-web.ts` waited a fixed 4 s for the wallet selector; it takes 2.4 to 5.0 s on this connection (measured 3 times), so one run reported it missing. It now waits up to 20 s for it, and also retries a page once after a load timeout.
 
 **Not tested:**
 - other wallets (Intear, Nightly, HOT);
