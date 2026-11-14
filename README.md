@@ -272,7 +272,9 @@ NEAR HACKATHON rule Q-015: a person may be on **at most 2** submissions, and eac
 
 | Member | Role in SlowCook | Other NEAR HACKATHON entry |
 |---|---|---|
-| Emmanuel ([@professor-12](https://github.com/professor-12)) | Lead and sole member | None |
+| Emmanuel ([@professor-12](https://github.com/professor-12)) | Lead and sole member | **Veil** (team member): [github.com/uiriamuzu/veil](https://github.com/uiriamuzu/veil) |
+
+Emmanuel (team lead) is also a member of the Veil team: [github.com/uiriamuzu/veil](https://github.com/uiriamuzu/veil).
 
 SlowCook is an independent submission with its own repo and code.
 

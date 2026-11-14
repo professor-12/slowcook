@@ -95,6 +95,6 @@ About 64 hours remain to the deadline.
   - fresh factory `slowcook-674040.testnet` (code hash = build), launch 0 deep pool, dump/defend, creator release refused during the lock, 61,937 mid-vest, 38,063 after;
   - README (parameters table, security-fix section, new evidence, old launches labelled pre-fix), site, test report, QA report, video script and terminal excerpts.
 - **Tag:** moved to the fix with the human's yes (2026-11-14).
-- **Q-015:** sole member, Emmanuel (@professor-12), no other entry. The section about other people's entries was removed at the human's request.
+- **Q-015:** sole member, Emmanuel (@professor-12); also a member of the Veil team (github.com/uiriamuzu/veil), per the human. The section about other people's entries was removed at the human's request.
 - **Human does:** the form and the X post.
 - **Real-wallet check (2026-11-14):** the human bought, sold and bought from the hosted site with Meteor Wallet; all three succeeded on-chain. Meteor's popup errors after sending ("reading 'name'"); the page now says the transaction may have gone through and refreshes, instead of "Not done".
