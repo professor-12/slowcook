@@ -244,6 +244,11 @@ DEMO_BUDGET_NEAR=1.3 DEMO_TICKS=6,7,8 DEMO_OVERDEPOSIT_PCT=10 DEMO_MIN_POOL_NEAR
 
 ## 6. Web app
 
+**Re-check after the creator-lock fix (2026-11-14).** `node scripts/check-web.ts`, local build of `96fbc1f` and then the hosted site https://web-omega-dun-65.vercel.app:
+- 5 pages (home, create, launch 0 on `slowcook-674040.testnet`, why, 404): all content checks pass, including the "Demo timings" badge and "SlowCook Deep Pool" read live from the new factory; the wallet selector opens; axe 0 violations; 0 targets under 24px.
+- 60/60 page × width × motion combinations clean on both. Reports: `results/web-check-2026-11-14T02-16-27-879Z.json` (local), `results/web-check-2026-11-14T02-54-15-696Z.json` (hosted).
+- For about 20 minutes after the deploy, Vercel's security checkpoint answered curl and headless Chromium with HTTP 403 ("Failed to verify your browser", code 21). The hosted check above ran after it lifted. Lighthouse was not re-run.
+
 **Redesign (2026-11-12).** The app was rebuilt to the owner's design standard (fintech pack): tokens, typed copy, accessibility, motion level 2, and dataviz-spec charts. Full report: [`docs/design/qa-report.md`](../docs/design/qa-report.md).
 
 **Headless QA:** `node scripts/serve-web.ts 8765`, then `node scripts/check-web.ts http://127.0.0.1:8765`.

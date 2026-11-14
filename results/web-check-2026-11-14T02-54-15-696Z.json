@@ -1,0 +1,572 @@
+{
+  "base": "https://web-omega-dun-65.vercel.app",
+  "checkedAt": "2026-11-14T02:48:18.294Z",
+  "content": [
+    {
+      "page": "/",
+      "ok": true,
+      "status": 200,
+      "problems": [],
+      "errors": [],
+      "wallet": "selector opened"
+    },
+    {
+      "page": "/create/",
+      "ok": true,
+      "status": 200,
+      "problems": [],
+      "errors": [],
+      "wallet": "skipped"
+    },
+    {
+      "page": "/launch/?id=0",
+      "ok": true,
+      "status": 200,
+      "problems": [],
+      "errors": [],
+      "wallet": "skipped"
+    },
+    {
+      "page": "/why/",
+      "ok": true,
+      "status": 200,
+      "problems": [],
+      "errors": [],
+      "wallet": "skipped"
+    },
+    {
+      "page": "/this-page-does-not-exist/",
+      "ok": true,
+      "status": 404,
+      "problems": [],
+      "errors": [],
+      "wallet": "skipped"
+    }
+  ],
+  "matrix": [
+    {
+      "page": "/",
+      "width": 320,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/",
+      "width": 320,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/",
+      "width": 375,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/",
+      "width": 375,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/",
+      "width": 768,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/",
+      "width": 768,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/",
+      "width": 1024,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/",
+      "width": 1024,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/",
+      "width": 1440,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/",
+      "width": 1440,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/",
+      "width": 1920,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/",
+      "width": 1920,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/create/",
+      "width": 320,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/create/",
+      "width": 320,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/create/",
+      "width": 375,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/create/",
+      "width": 375,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/create/",
+      "width": 768,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/create/",
+      "width": 768,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/create/",
+      "width": 1024,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/create/",
+      "width": 1024,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/create/",
+      "width": 1440,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/create/",
+      "width": 1440,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/create/",
+      "width": 1920,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/create/",
+      "width": 1920,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/launch/?id=0",
+      "width": 320,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/launch/?id=0",
+      "width": 320,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/launch/?id=0",
+      "width": 375,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/launch/?id=0",
+      "width": 375,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/launch/?id=0",
+      "width": 768,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/launch/?id=0",
+      "width": 768,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/launch/?id=0",
+      "width": 1024,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/launch/?id=0",
+      "width": 1024,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/launch/?id=0",
+      "width": 1440,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/launch/?id=0",
+      "width": 1440,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/launch/?id=0",
+      "width": 1920,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/launch/?id=0",
+      "width": 1920,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/why/",
+      "width": 320,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/why/",
+      "width": 320,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/why/",
+      "width": 375,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/why/",
+      "width": 375,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/why/",
+      "width": 768,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/why/",
+      "width": 768,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/why/",
+      "width": 1024,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/why/",
+      "width": 1024,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/why/",
+      "width": 1440,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/why/",
+      "width": 1440,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/why/",
+      "width": 1920,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/why/",
+      "width": 1920,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/this-page-does-not-exist/",
+      "width": 320,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/this-page-does-not-exist/",
+      "width": 320,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/this-page-does-not-exist/",
+      "width": 375,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/this-page-does-not-exist/",
+      "width": 375,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/this-page-does-not-exist/",
+      "width": 768,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/this-page-does-not-exist/",
+      "width": 768,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/this-page-does-not-exist/",
+      "width": 1024,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/this-page-does-not-exist/",
+      "width": 1024,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/this-page-does-not-exist/",
+      "width": 1440,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/this-page-does-not-exist/",
+      "width": 1440,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/this-page-does-not-exist/",
+      "width": 1920,
+      "reducedMotion": false,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    },
+    {
+      "page": "/this-page-does-not-exist/",
+      "width": 1920,
+      "reducedMotion": true,
+      "ok": true,
+      "horizontalOverflowPx": 0,
+      "errors": []
+    }
+  ],
+  "axe": [
+    {
+      "page": "/",
+      "violations": []
+    },
+    {
+      "page": "/create/",
+      "violations": []
+    },
+    {
+      "page": "/launch/?id=0",
+      "violations": []
+    },
+    {
+      "page": "/why/",
+      "violations": []
+    },
+    {
+      "page": "/this-page-does-not-exist/",
+      "violations": []
+    }
+  ],
+  "targets": [
+    {
+      "page": "/",
+      "under24px": []
+    },
+    {
+      "page": "/create/",
+      "under24px": []
+    },
+    {
+      "page": "/launch/?id=0",
+      "under24px": []
+    },
+    {
+      "page": "/why/",
+      "under24px": []
+    },
+    {
+      "page": "/this-page-does-not-exist/",
+      "under24px": []
+    }
+  ]
+}
