@@ -10,7 +10,7 @@ const CODES: Record<string, string> = {
   E_SLIPPAGE: "The price moved past your 1% limit.",
   E_TRIGGER: "The buyback is not armed: the price has not stayed below the floor long enough.",
   E_EPOCH_CAP: "The buyback already spent this epoch's budget. Try again in the next epoch.",
-  E_LOCKED: "Creator tokens stay locked until the price holds at or above clearing for the required intervals.",
+  E_LOCKED: "Creator tokens are not releasable yet: the lock is still running, the price has not held above clearing plus 5% for the required intervals, or nothing new has vested.",
   E_TOO_SOON: "A price observation was recorded moments ago. Wait for the interval to pass.",
   E_NO_BID: "Your account has no bid in this launch.",
   E_PARAMS: "One of the values is out of range.",
@@ -22,5 +22,6 @@ export function explainError(e: unknown): string {
   const code = raw.match(/E_[A-Z_]+/)?.[0];
   if (code && CODES[code]) return `Not done. ${CODES[code]} Any NEAR you attached was returned; only the network fee was charged.`;
   if (/reject|cancel|denied|closed/i.test(raw)) return "Not sent. You closed or rejected the wallet request, so nothing was charged.";
-  return `Not done. ${raw.slice(0, 160)}`;
+  // Any other wallet error is ambiguous: some wallets report one after the transaction was already sent.
+  return `Your wallet reported an error: "${raw.slice(0, 120)}". It may still have sent the transaction. Check your wallet's activity or reload this page before trying again.`;
 }

@@ -92,7 +92,7 @@ Targets from the standard, with current status (`docs/design/qa-report.md`):
 
 ## 10. Acceptance criteria
 - [x] Every section in §4 is built with real copy from `apps/web/content`.
-- [ ] Every flow in §5 works, including errors. The UI and error mapping are built, and the read paths are tested in headless Chromium; **signing with a real wallet has not been tested in a browser**.
+- [ ] Every flow in §5 works, including errors. The UI and error mapping are built, and the read paths are tested in headless Chromium; signing with a real wallet was tested on 2026-11-14 with Meteor Wallet (buy, sell: all succeeded on-chain; Meteor shows an error in its popup after sending). Bid, reveal and claim were not signed from a real wallet, because no launch is in its bidding window.
 - [ ] `qa-checklist.md` passes: see `qa-report.md`. Performance and screen-reader items are open.
 - [x] The build matches the `reference-sheet.md` decisions.
 

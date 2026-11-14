@@ -287,8 +287,19 @@ DEMO_BUDGET_NEAR=1.3 DEMO_TICKS=6,7,8 DEMO_OVERDEPOSIT_PCT=10 DEMO_MIN_POOL_NEAR
   - Create's total blocking time varied from 1,510 ms to 420 ms between consecutive runs.
 - **PageSpeed Insights:** not run. Google returned HTTP 429, because the anonymous daily quota is used up.
 
+**Real-wallet check (2026-11-14, by the human, Meteor Wallet on testnet, account `veil-wallet-recv.testnet`, from the hosted site's launch 0 page).** All three transactions succeeded on-chain (RPC `tx`, `final_execution_status: FINAL`, no failed receipts):
+
+| Tx | Action from the site | On-chain result |
+|---|---|---|
+| [5Lzt4PqG…](https://testnet.nearblocks.io/txns/5Lzt4PqGaEiYR31hn1TwiQJ6Ufq9wVxzQFHac6q1NJfg) | Buy, 0.1 NEAR | 4,338.04 DEEP, equal to the page's quote ("You receive about 4,338.04 tokens") |
+| [GSSaBXVb…](https://testnet.nearblocks.io/txns/GSSaBXVb8mVYRzdcUB18Exp8YVMthwtwGXtJjnjPH54o) | Sell, 0.1 DEEP (`ft_transfer_call`) | 0.0000023 NEAR back |
+| [E2pHNUKM…](https://testnet.nearblocks.io/txns/E2pHNUKMADb7UDzCZmHUknFGs3pMiye6dNTYVLDooaBe) | Buy, 0.1 NEAR | 4,205.13 DEEP |
+
+- **Wallet error after sending.** Each time, Meteor's popup showed "Something went wrong while completing the request: Cannot read properties of undefined (reading 'name')" *after* broadcasting. The request we send uses the connector's action format, which Meteor's executor passes through unchanged (`if ("type" in G) return G`), so the error is inside Meteor's popup app. Not reproduced with another wallet.
+- **Fix on our side (commit after `3810315`).** The page used to call any non-contract wallet error "Not done", which was false here. It now says the wallet may still have sent the transaction and refreshes the on-chain figures after any error.
+
 **Not tested:**
-- signing with a real wallet;
+- other wallets (Intear, Nightly, HOT);
 - a screen reader.
 
 ## 7. Fresh-clone test (2026-11-10)

@@ -97,3 +97,4 @@ About 64 hours remain to the deadline.
 - **Tag:** moved to the fix with the human's yes (2026-11-14).
 - **Q-015:** sole member, Emmanuel (@professor-12), no other entry. The section about other people's entries was removed at the human's request.
 - **Human does:** the form and the X post.
+- **Real-wallet check (2026-11-14):** the human bought, sold and bought from the hosted site with Meteor Wallet; all three succeeded on-chain. Meteor's popup errors after sending ("reading 'name'"); the page now says the transaction may have gone through and refreshes, instead of "Not done".

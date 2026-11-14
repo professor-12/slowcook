@@ -86,6 +86,8 @@ function Launch() {
       await refresh();
     } catch (e) {
       setMsg({ text: `${label}: ${explainError(e)}`, ok: false });
+      // The wallet may have sent the transaction before it errored: show the chain's current state.
+      await refresh().catch(() => {});
     } finally {
       setBusy(null);
     }

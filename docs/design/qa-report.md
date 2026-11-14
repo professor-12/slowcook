@@ -80,6 +80,6 @@ This machine was shared with another project's builds during testing, so blockin
 
 ## Open items, in priority order
 1. ~~Hosted URL~~ Done: checks pass on the hosted site. PageSpeed Insights is still to run once its quota resets or with an API key.
-2. **Real-wallet click-through** (needs a human with a testnet wallet).
+2. ~~Real-wallet click-through~~ Done 2026-11-14 with Meteor Wallet: buy, sell and buy succeeded on-chain from the hosted site; Meteor shows an error in its own popup after sending (test report §6). Other wallets not tried.
 3. **Screen-reader pass and manual keyboard walk-through.**
 4. **Launch page LCP:** needs server rendering if a sub-2.5 s lab LCP is required.
