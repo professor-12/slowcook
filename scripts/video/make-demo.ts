@@ -84,7 +84,7 @@ function cardHtml(id: "title" | "end"): string {
          <h1>Memecoin launches where being first is worthless.</h1>
          <p>Sealed bids · one clearing price for every winner · unsold supply burned · a treasury that defends the price</p></div>`
       : `<div class="wrap"><div class="brand">Slow<span>Cook</span><span class="pill">Built at NEAR HACKATHON</span></div>
-         <ul class="facts"><li><b>58</b> contract tests, every error code</li><li><b>1,000</b> random auctions per property-test run</li><li><b>1,000</b> auctions matched against an independent model</li><li>CI green on every push</li></ul>
+         <ul class="facts"><li><b>70</b> contract tests, every error code</li><li><b>1,000</b> random auctions per property-test run</li><li><b>1,000</b> auctions matched against an independent model</li><li>CI green on every push</li></ul>
          <p class="links"><span>Live demo</span> web-omega-dun-65.vercel.app</p>
          <p class="links"><span>Code</span> github.com/professor-12/slowcook</p>
          <p class="small">Testnet only. Contracts unaudited. Simulation figures are labelled SIMULATED in the repo. @NEARProtocol #NEARHackathon</p></div>`;
@@ -103,7 +103,7 @@ function cardHtml(id: "title" | "end"): string {
   </style></head><body>${body}</body></html>`;
 }
 
-function terminalHtml(id: "launch" | "dump", secs: number): string {
+function terminalHtml(id: "launch" | "dump" | "creator", secs: number): string {
   const lines = readFileSync(join(ROOT, "scripts", "video", `terminal-${id}.txt`), "utf8").trimEnd().split("\n");
   const per = Math.max(0.12, (secs - 1.5) / lines.length);
   const html = lines
@@ -112,7 +112,8 @@ function terminalHtml(id: "launch" | "dump", secs: number): string {
       return `<div class="l ${cls}" style="animation-delay:${(0.3 + i * per).toFixed(2)}s">${esc(l)}</div>`;
     })
     .join("");
-  const title = id === "launch" ? "Real launch on NEAR testnet · scripts/demo-launch.ts" : "Scripted sell-off and Floor Keeper · scripts/demo-dump.ts";
+  const title =
+    id === "launch" ? "Real launch on NEAR testnet · scripts/demo-launch.ts" : id === "dump" ? "Scripted sell-off and Floor Keeper · scripts/demo-dump.ts" : "Creator lock and vest · scripts/demo-dump.ts";
   return `<!doctype html><html><head><meta charset="utf-8"><style>${fontCss}
   body{background:#f5f7f6;display:grid;place-items:center}
   .win{width:1220px;height:660px;background:#0b1a14;border-radius:16px;box-shadow:0 12px 32px -8px rgb(11 26 20/.3);display:grid;grid-template-rows:auto 1fr;overflow:hidden}

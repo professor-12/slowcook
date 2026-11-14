@@ -6,6 +6,8 @@ Checklist: `core/qa-checklist.md`. Build: `apps/web` static export, served local
 - `node scripts/check-web.ts` (headless Chromium 1248, axe-core 4.14). Report: `results/web-check-2026-11-12T08-39-12-309Z.json`; screenshots in `verification/web-check/`.
 - `node scripts/lighthouse.ts` (Lighthouse 13.6, Chromium 1228, mobile defaults). Report: `results/lighthouse-2026-11-12T08-40-18-686Z.json`.
 
+**Re-check 2026-11-14** (creator-lock fix: new factory, timing-mode toggle on create, lock and vest rows and a "Demo timings" badge on the launch page): `node scripts/check-web.ts` on the local build gave 5/5 pages clean, axe 0 violations, 0 targets under 24px, and 60/60 page × width × motion combinations clean. There is now one launch page (launch 0 on the new factory) instead of two, so the matrix is 60 rather than 72. Report: `results/web-check-2026-11-14T02-16-27-879Z.json`. Lighthouse was not re-run.
+
 **Hosted:** https://web-omega-dun-65.vercel.app. The hosted results are in `verification/test-report.md` §6: 6/6 pages, axe 0, 72/72 matrix, Lighthouse accessibility, best practices and SEO all 100, performance 74–92.
 
 ## Visual
@@ -73,7 +75,7 @@ This machine was shared with another project's builds during testing, so blockin
 | Item | Result | Evidence / notes |
 |---|---|---|
 | Humanizer rules | **Pass** | Grep of `apps/web/content/site.ts` for em dashes and the banned-word list returns nothing. "Unlock" appears only as the contract method name `unlock_creator`; the copy says "release". No "not X but Y" constructions. |
-| CTAs verb + object, ≤ 3 words | **Pass** | "See a launch", "Create a launch", "Seal my bid", "Reveal my bid", "Finalize auction", "Claim tokens", "Claim refund", "Buy tokens", "Sell tokens", "Record price", "Run buyback", "Read the code", "See launch 1". "Release creator tokens" is 3 words. |
+| CTAs verb + object, ≤ 3 words | **Pass** | "See a launch", "Create a launch", "Seal my bid", "Reveal my bid", "Finalize auction", "Claim tokens", "Claim refund", "Buy tokens", "Sell tokens", "Record price", "Run buyback", "Read the code", "See launch 0". "Release creator tokens" is 3 words. |
 | Every number sourced | **Pass** | Sources are listed in `core/PRD.md`, "Number sources". Simulated figures are labelled SIMULATED. |
 
 ## Open items, in priority order

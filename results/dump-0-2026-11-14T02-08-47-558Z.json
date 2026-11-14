@@ -1,0 +1,261 @@
+{
+  "label": "REAL testnet run (test NEAR, no real value)",
+  "factory": "slowcook-674040.testnet",
+  "launch_id": "0",
+  "token": "deep-0.slowcook-674040.testnet",
+  "clearing_price": "19526549953584173415",
+  "tokens_dumped": "308480000000000000000000",
+  "treasury_before": "5929464748717242631183533",
+  "treasury_after": "5336518273845518368065180",
+  "defend_1": {
+    "launch_id": 0,
+    "spent": "592946474871724263118353",
+    "burned": "103215890672705357110241",
+    "spot_before": "4755938467492575078",
+    "spot_after": "6901024334014071147",
+    "epoch_remaining": "0"
+  },
+  "supply_before_defend": "1000000000000000000000000",
+  "supply_after_defend": "896784109327294642889759",
+  "defend_2_error": "E_EPOCH_CAP",
+  "creator_lock": {
+    "lock_ends_ms": 1794621922793,
+    "vest_ends_ms": 1794622102793,
+    "allocation": "100000",
+    "rejected_during_lock": true,
+    "rejected_error": "{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: E_LOCKED: creator lock ends at 1794621922793 ms (525 s left)\"}}}}",
+    "mid_vest_released": "61937",
+    "after_vest_released": "38063"
+  },
+  "creator_balance": "100000000000000000000000",
+  "solvency": {
+    "balance": "21750583357644746215743653",
+    "storage_locked": "4748900000000000000000000",
+    "owed": "11654348923082012215743668",
+    "solvent": true
+  },
+  "steps": [
+    {
+      "step": "unlock_creator (expect E_LOCKED)",
+      "ok": false,
+      "tx": "https://testnet.nearblocks.io/txns/DsW44QYxDBmU49cXkxXCvSRBrNTuytW1SQsiP7dZzkKk",
+      "error": "{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: E_LOCKED: creator lock ends at 1794621922793 ms (806 s left)\"}}}}"
+    },
+    {
+      "step": "poke (close the at-clearing interval)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/JE2t3pYTrtBXanAWezZWEFjGL66VhWfm6PRYWfmqdD3U"
+    },
+    {
+      "step": "dump b0-qw3dd.sc-bidders-da9146.testnet sells 9409 tokens",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/BKWdvcAz1C984vbPtQXVmyNZms3BnaeZHW5ptkQMVqAx"
+    },
+    {
+      "step": "dump b1-qw3dd.sc-bidders-da9146.testnet sells 66473 tokens",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/G6hjq475P5TU8EXgqMcqGpgTkkKfevuZ2HvPnzYxxKQj"
+    },
+    {
+      "step": "dump b2-qw3dd.sc-bidders-da9146.testnet sells 57892 tokens",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/3wcfN9PnSgbNQJfMn9JksRZacTzMxS7Sp1Y7FcJPPtZf"
+    },
+    {
+      "step": "dump b3-qw3dd.sc-bidders-da9146.testnet sells 50341 tokens",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/4QzthDzncPfVuuQk3uvz1DpRZRq1bBWz8WVnDb6DFviP"
+    },
+    {
+      "step": "dump b4-qw3dd.sc-bidders-da9146.testnet sells 66473 tokens",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/Dbeqqpkc9NiQVBCUSBqwQaaYzYU1JShwJodup6YDHL52"
+    },
+    {
+      "step": "dump b5-qw3dd.sc-bidders-da9146.testnet sells 57892 tokens",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/HFQF7qzFLdx8pFqkTBv2x3Zh646fLKuGJpi1F4C6wnm8"
+    },
+    {
+      "step": "defend before trigger (expect E_TRIGGER)",
+      "ok": false,
+      "tx": "https://testnet.nearblocks.io/txns/C86aaWDetFEoA5GPWQoW58rMSCA1Pc3VQF8zA8sttkur",
+      "error": "{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: E_TRIGGER: TWAP has not been below the floor for k_obs observations\"}}}}"
+    },
+    {
+      "step": "poke 1/3 (after dump)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/F4cgL5Z1QByyrNkerfK9Bhw2Ddvkd1HRLQmTZSpCBTRy",
+      "twap": "9033114241486190684",
+      "floor": "17573894958225756073",
+      "below_streak": 1,
+      "above_streak": 0
+    },
+    {
+      "step": "poke 2/3 (after dump)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/EMp333SDwANNK8zjPS1XNZFqpjBAk3jsrNdyH9CSL1Ud",
+      "twap": "4755938467492575078",
+      "floor": "17573894958225756073",
+      "below_streak": 2,
+      "above_streak": 0
+    },
+    {
+      "step": "poke 3/3 (after dump)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/GJdnb9o4wD1bn4F3eASE3fRmbZPe9XPHvBE4DK82hNm2",
+      "twap": "4755938467492575078",
+      "floor": "17573894958225756073",
+      "below_streak": 3,
+      "above_streak": 0
+    },
+    {
+      "step": "defend #1",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/E29i7jvS7YGLW4twXPEPjrtgUEU6zKq1BisE4YhTfZas",
+      "launch_id": 0,
+      "spent": "592946474871724263118353",
+      "burned": "103215890672705357110241",
+      "spot_before": "4755938467492575078",
+      "spot_after": "6901024334014071147",
+      "epoch_remaining": "0"
+    },
+    {
+      "step": "poke 1/3 (same epoch)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/FSiiDN28cDrkJTi8jtmL1cXHE8TVfT3AMEtXWNTfR2mM",
+      "twap": "6479892351989413862",
+      "floor": "17573894958225756073",
+      "below_streak": 1,
+      "above_streak": 0
+    },
+    {
+      "step": "poke 2/3 (same epoch)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/Cco6Jn1DigSBB6K2zArba8b1t9KNNS9nRcseaxzQj18s",
+      "twap": "6901024334014071147",
+      "floor": "17573894958225756073",
+      "below_streak": 2,
+      "above_streak": 0
+    },
+    {
+      "step": "poke 3/3 (same epoch)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/4RQjnVaS1ZEHoDMr7WCfUbQZ7fYZULeT6Nrvyey1voYs",
+      "twap": "6901024334014071147",
+      "floor": "17573894958225756073",
+      "below_streak": 3,
+      "above_streak": 0
+    },
+    {
+      "step": "defend #2 in same epoch (expect E_EPOCH_CAP)",
+      "ok": false,
+      "tx": "https://testnet.nearblocks.io/txns/3oirdDs8iuzHddc3PEdGzq46uv1ugZFaBJC2m8BhCCsc",
+      "error": "{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: E_EPOCH_CAP: epoch budget spent\"}}}}"
+    },
+    {
+      "step": "buyer swaps 2.8310 NEAR for tokens (sized to lift spot ~15% above clearing)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/GTE2FKGxGc3jb2Jj8Et19Rp7eRmJeYvrnrmYdWdJ5NVQ"
+    },
+    {
+      "step": "poke 1/7 (recovery)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/9ohpaAPZttYr2GYnAEcQrvbf6tz6ui7ovkdMSP14hNhK",
+      "twap": "17874880888595817456",
+      "floor": "17573894958225756073",
+      "below_streak": 0,
+      "above_streak": 0
+    },
+    {
+      "step": "poke 2/7 (recovery)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/Cj9onSYwp4KkJodndbYy8WQUrKSSpMptcm7Gzx1h3sFv",
+      "twap": "22625661914926157855",
+      "floor": "17573894958225756073",
+      "below_streak": 0,
+      "above_streak": 1
+    },
+    {
+      "step": "poke 3/7 (recovery)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/B8mXmnX4GyDhchbzyiiojEdRjoBYAtg5mYCQ7GaCPc4y",
+      "twap": "22625661914926157855",
+      "floor": "17573894958225756073",
+      "below_streak": 0,
+      "above_streak": 2
+    },
+    {
+      "step": "poke 4/7 (recovery)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/CB9fNJfcBpEY4NvEhHUSPT8mY48doV8gNabB5vDeT1ny",
+      "twap": "22625661914926157855",
+      "floor": "17573894958225756073",
+      "below_streak": 0,
+      "above_streak": 3
+    },
+    {
+      "step": "poke 5/7 (recovery)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/Eqe4xpdzDg1ZJPayowrzBCcJu2SyTvUTZJyDqUkUM7yB",
+      "twap": "22625661914926157855",
+      "floor": "17573894958225756073",
+      "below_streak": 0,
+      "above_streak": 4
+    },
+    {
+      "step": "poke 6/7 (recovery)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/CGCaK3UrMq2kbtup87SVw71nWqFoocUpWK1ugQCpN9hA",
+      "twap": "22625661914926157855",
+      "floor": "17573894958225756073",
+      "below_streak": 0,
+      "above_streak": 5
+    },
+    {
+      "step": "poke 7/7 (recovery)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/CnzZM2preDka6WVm7BL2sVpj4AqBskpfyDLxVE73CPYt",
+      "twap": "22625661914926157855",
+      "floor": "17573894958225756073",
+      "below_streak": 0,
+      "above_streak": 6
+    },
+    {
+      "step": "unlock_creator while the lock runs (expect E_LOCKED)",
+      "ok": false,
+      "tx": "https://testnet.nearblocks.io/txns/DARXW1JeJ7uPo83DAPiJ4VQVP5gb3VPVvAvxABQXzmKg",
+      "error": "{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: E_LOCKED: creator lock ends at 1794621922793 ms (525 s left)\"}}}}"
+    },
+    {
+      "step": "poke 1/1 (still holding)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/2x6fVTpTGscqKhnMe6Ue4mrqNAvYgvFfdCgRZLX4xkwy",
+      "twap": "22625661914926157855",
+      "floor": "17573894958225756073",
+      "below_streak": 0,
+      "above_streak": 7
+    },
+    {
+      "step": "unlock_creator mid-vest (expect a partial release)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/4sPCkd6jZGjuvfoKHCLJsurpM9RZzsoYvk55kpAccEky",
+      "released": "61937"
+    },
+    {
+      "step": "poke 1/1 (still holding)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/5XgbYiawcHqB7ShJ5fEastbXHAdNDWmzPArjKzLX2dMB",
+      "twap": "22625661914926157855",
+      "floor": "17573894958225756073",
+      "below_streak": 0,
+      "above_streak": 8
+    },
+    {
+      "step": "unlock_creator after the vest (expect the rest)",
+      "ok": true,
+      "tx": "https://testnet.nearblocks.io/txns/3qkrio5WFX1Z19cfRWihUYzwAALyHjjbcPDkQDS6RBuw",
+      "released": "38063"
+    }
+  ]
+}

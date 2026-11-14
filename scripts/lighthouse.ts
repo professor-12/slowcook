@@ -12,7 +12,7 @@ import { writeResult } from "./lib.ts";
 const BASE = (process.argv[2] ?? "http://127.0.0.1:8765").replace(/\/$/, "");
 const ALL_PAGES = [
   ["home", "/"],
-  ["launch-1", "/launch/?id=1"],
+  ["launch-0", "/launch/?id=0"],
   ["why", "/why/"],
   ["create", "/create/"],
 ];

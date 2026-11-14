@@ -86,3 +86,12 @@ About 64 hours remain to the deadline.
 - **Hosted QA:** 6/6 pages, axe 0, 72/72 matrix. Lighthouse: accessibility, best practices and SEO all 100; performance 74–92.
 - **Fixed:** a 320px header overflow that appeared only with web fonts blocked. Canonical, Open Graph and sitemap are live.
 - **Remaining for the human:** demo video, X post (draft has the live and repo links), form fields, Partner A's other entry, final "yes" to submit.
+
+## Creator-lock fix (2026-11-14)
+- **Review finding:** the creator lock could be bypassed (`h_obs = 1`, 1 s pokes, and "TWAP ≥ clearing" while the pool opens at clearing).
+- **Done:**
+  - failing tests first (`1c83075`; red output in `verification/creator-lock-red.txt`), then the fix (`5ad4575`): 7-day minimum lock, hold at clearing × 1.05 for ≥ 7 days, linear vest ≥ 7 days, minimums on `k_obs`, epoch and poke, demo timings only on `.testnet`, `get_config` view;
+  - 66 + 4 contract tests with `PROPTEST_CASES=1000`, 4 sandbox tests, CI run 43542452926 green;
+  - fresh factory `slowcook-674040.testnet` (code hash = build), launch 0 deep pool, dump/defend, creator release refused during the lock, 61,937 mid-vest, 38,063 after;
+  - README (parameters table, security-fix section, new evidence, old launches labelled pre-fix), site, test report, QA report, video script and terminal excerpts.
+- **Needs the human:** a yes before moving the `hackathon-submission` tag (force-push); re-post the video if the X post should show the fix.

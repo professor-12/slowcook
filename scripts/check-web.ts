@@ -51,26 +51,17 @@ const CHECKS: Check[] = [
   {
     path: "/",
     name: "home",
-    expect: async (p) => [...(await textVisible(p, "being first is worthless")), ...(await textVisible(p, "SlowCook Demo")), ...(await textVisible(p, "Live from NEAR testnet"))],
+    expect: async (p) => [...(await textVisible(p, "being first is worthless")), ...(await textVisible(p, "SlowCook Deep Pool")), ...(await textVisible(p, "Live from NEAR testnet"))],
   },
   { path: "/create/", name: "create", expect: async (p) => [...(await textVisible(p, "Create a launch")), ...(await textVisible(p, "Connect wallet to create"))] },
   {
     path: "/launch/?id=0",
     name: "launch-0",
     expect: async (p) => {
-      const probs = [...(await textVisible(p, "SlowCook Demo")), ...(await textVisible(p, "Floor Keeper"))];
+      const probs = [...(await textVisible(p, "SlowCook Deep Pool")), ...(await textVisible(p, "Floor Keeper")), ...(await textVisible(p, "Demo timings"))];
       if ((await p.locator("svg[aria-label='Demand by price tick'] path").count()) === 0) probs.push("histogram has no bars");
       const v = await p.locator(".stat", { hasText: "Clearing price" }).locator(".value").innerText().catch(() => "");
       if (!v || v === "Sealed") probs.push(`clearing price stat shows "${v}"`);
-      return probs;
-    },
-  },
-  {
-    path: "/launch/?id=1",
-    name: "launch-1",
-    expect: async (p) => {
-      const probs = [...(await textVisible(p, "SlowCook Deep Pool")), ...(await textVisible(p, "Floor Keeper"))];
-      if ((await p.locator("svg[aria-label='Demand by price tick'] path").count()) === 0) probs.push("histogram has no bars");
       return probs;
     },
   },

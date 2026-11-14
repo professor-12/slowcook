@@ -1,0 +1,15 @@
+{
+  "network": "testnet",
+  "factory": "slowcook-674040.testnet",
+  "at": "2026-11-14T01:45:22.972Z",
+  "deploy_tx": "https://testnet.nearblocks.io/txns/FWrt4Yv7AdWGPF4tVyhzVZ1cnc88tWSsofpGhhStdmzP",
+  "demo_allowed": true,
+  "init_tx": "https://testnet.nearblocks.io/txns/2HAjMs9yBfrG6dRZiFdqTQoiUZ9devxGg3SBsnAe7xRJ",
+  "set_token_code_tx": "https://testnet.nearblocks.io/txns/GL2cxBTTYH99WdgTQz7NU3xbq454VkQZq9n3PWeahLfD",
+  "token_code": {
+    "Embedded": {
+      "hash": "5aeL9k2ti2mUjx5pkCQfjbcXquj6tsnsz4hiZqvNqV75",
+      "len": 158654
+    }
+  }
+}

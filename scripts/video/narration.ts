@@ -3,12 +3,13 @@
 //  - pump.fun same-block sniping (>50%, 2025): Pine Analytics 2025-04-21 (research/00-brief.md)
 //  - bundled wallets 36.5% of supply on Solana launchpads: MELT dataset, arXiv 2602.13480 (research/00-brief.md)
 //  - simulation (40.3%, +437%, 10.7%, -9.2%): results/sim-summary-SIMULATED.json
-//  - launch 1: results/launch-1-2026-11-12T07-16-28-408Z.json; dump: results/dump-1-2026-11-12T07-21-36-824Z.json
-//  - tests: verification/test-report.md (54 + 4 contract tests, 1000-case property tests, CI)
+//  - launch 0 on the fixed factory (slowcook-674040.testnet): results/launch-0-2026-11-14T01-51-38-296Z.json;
+//    dump and creator lock: results/dump-0-2026-11-14T02-08-47-558Z.json
+//  - tests: verification/test-report.md (66 + 4 = 70 contract tests, 1000-case property tests, CI)
 
 export type Visual =
   | { kind: "card"; id: "title" | "end" }
-  | { kind: "terminal"; id: "launch" | "dump" }
+  | { kind: "terminal"; id: "launch" | "dump" | "creator" }
   | { kind: "page"; path: string; action: "hero" | "steps" | "why" | "launch-curve" | "launch-keeper" };
 
 export interface Line {
@@ -72,7 +73,7 @@ export const SCENES: Scene[] = [
   },
   {
     id: "clear",
-    visual: { kind: "page", path: "/launch/?id=1", action: "launch-curve" },
+    visual: { kind: "page", path: "/launch/?id=0", action: "launch-curve" },
     lines: [
       same("Anyone can finalize. The contract fills bids from the highest price down."),
       {
@@ -96,13 +97,30 @@ export const SCENES: Scene[] = [
   },
   {
     id: "keeper",
-    visual: { kind: "page", path: "/launch/?id=1", action: "launch-keeper" },
+    visual: { kind: "page", path: "/launch/?id=0", action: "launch-keeper" },
     lines: [
       {
         say: "The live page shows a hundred and three thousand tokens bought back and burned.",
         cap: "The live page shows 103,215 tokens bought back and burned.",
       },
-      same("The creator's tokens stayed locked until the price recovered and held."),
+    ],
+  },
+  {
+    id: "creator",
+    visual: { kind: "terminal", id: "creator" },
+    lines: [
+      {
+        say: "Creator tokens are locked for at least seven days. This demo uses fifteen minutes.",
+        cap: "Creator tokens are locked for at least 7 days. This demo uses 15 minutes.",
+      },
+      {
+        say: "With the price held above clearing plus five percent, the creator tried early. The contract refused.",
+        cap: "With the price held above clearing + 5%, the creator tried early. The contract refused.",
+      },
+      {
+        say: "After the lock, tokens vest over time: about sixty two thousand part-way through, the rest at the end.",
+        cap: "After the lock, tokens vest over time: 61,937 part-way through, the rest at the end.",
+      },
     ],
   },
   {

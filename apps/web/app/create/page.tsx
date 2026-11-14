@@ -7,14 +7,44 @@ import { explainError } from "@/lib/errors";
 import { FACTORY, parseNear } from "@/lib/near";
 import { useWallet } from "@/lib/wallet";
 
-const DRAFT_KEY = "slowcook:create-draft";
+const DRAFT_KEY = "slowcook:create-draft-v2";
+const DAY = 86_400;
+// Protocol minimums and defaults, as enforced by the contract (README "Launch parameters").
+const TIMINGS = {
+  production: { k: "6", h: "1008", epoch: String(DAY), poke: "600", lock: String(7 * DAY), vest: String(30 * DAY) },
+  demo: { k: "3", h: "6", epoch: "120", poke: "10", lock: "300", vest: "120" },
+};
+type Mode = keyof typeof TIMINGS;
 const DEFAULTS = {
   name: "Slow Pepe", symbol: "SPEPE", icon: "", total: "1000000", sale: "60", lp: "30", creator: "10",
-  pMin: "0.000001", commit: "300", reveal: "300", penalty: "5", band: "10", k: "6", h: "12", r: "10", epoch: "120", poke: "10",
+  pMin: "0.000001", commit: "300", reveal: "300", penalty: "5", band: "10", r: "10",
+  ...TIMINGS.production,
   fee: "2.1",
 };
 type Form = typeof DEFAULTS;
 type Key = keyof Form;
+const days = (secs: number) => `${Math.round((secs / DAY) * 10) / 10} days`;
+
+function validateTimings(f: Form, mode: Mode): Partial<Record<Key, string>> {
+  const e: Partial<Record<Key, string>> = {};
+  const n = (k: Key) => Number(f[k]);
+  const int = (k: Key) => Number.isInteger(n(k)) && n(k) > 0;
+  for (const k of ["k", "h", "epoch", "poke", "lock", "vest"] as Key[]) if (!int(k)) e[k] = "Enter a whole number above 0.";
+  if (mode === "demo") {
+    if (!(n("lock") >= 30)) e.lock = "Use at least 30 seconds.";
+    if (!(n("vest") >= 10)) e.vest = "Use at least 10 seconds.";
+    if (!(n("epoch") >= 10)) e.epoch = "Use at least 10 seconds.";
+    return e;
+  }
+  if (!(n("lock") >= 7 * DAY)) e.lock = `Use at least ${7 * DAY} seconds (7 days).`;
+  if (!(n("vest") >= 7 * DAY)) e.vest = `Use at least ${7 * DAY} seconds (7 days).`;
+  if (!(n("poke") >= 60)) e.poke = "Use at least 60 seconds.";
+  if (!(n("k") >= 3)) e.k = "Use at least 3 intervals.";
+  else if (n("k") * n("poke") < 1800) e.k = `Intervals times seconds between observations must reach 30 minutes. Now ${Math.round((n("k") * n("poke")) / 60)} minutes.`;
+  if (n("h") * n("poke") < 7 * DAY) e.h = `Intervals times seconds between observations must reach 7 days. Now ${days(n("h") * n("poke"))}.`;
+  if (!(n("epoch") >= 3600)) e.epoch = "Use at least 3600 seconds (1 hour).";
+  return e;
+}
 
 function validate(f: Form): Partial<Record<Key, string>> {
   const e: Partial<Record<Key, string>> = {};
@@ -40,6 +70,7 @@ export default function Create() {
   const router = useRouter();
   const fid = useId();
   const [f, setF] = useState<Form>(DEFAULTS);
+  const [mode, setMode] = useState<Mode>("production");
   const [touched, setTouched] = useState<Partial<Record<Key, boolean>>>({});
   const [submitted, setSubmitted] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -48,16 +79,24 @@ export default function Create() {
   useEffect(() => {
     try {
       const d = localStorage.getItem(DRAFT_KEY);
-      if (d) setF({ ...DEFAULTS, ...JSON.parse(d) });
+      if (d) {
+        const { mode: m, ...rest } = JSON.parse(d);
+        setF({ ...DEFAULTS, ...rest });
+        if (m === "demo" || m === "production") setMode(m);
+      }
     } catch {}
   }, []);
   useEffect(() => {
     try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(f));
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...f, mode }));
     } catch {}
-  }, [f]);
+  }, [f, mode]);
 
-  const errors = validate(f);
+  const errors = { ...validate(f), ...validateTimings(f, mode) };
+  const pickMode = (m: Mode) => {
+    setMode(m);
+    setF({ ...f, ...TIMINGS[m] });
+  };
   const show = (k: Key) => (submitted || touched[k]) && errors[k];
 
   async function submit() {
@@ -75,6 +114,7 @@ export default function Create() {
         p_min: parseNear(f.pMin).toString(), commit_secs: Number(f.commit), reveal_secs: Number(f.reveal),
         penalty_bps: Math.round(Number(f.penalty) * 100), band_bps: Math.round(Number(f.band) * 100), k_obs: Number(f.k), h_obs: Number(f.h),
         r_bps: Math.round(Number(f.r) * 100), epoch_secs: Number(f.epoch), poke_interval_secs: Number(f.poke),
+        creator_lock_secs: Number(f.lock), creator_vest_secs: Number(f.vest), demo: mode === "demo",
       };
       const { result } = await call(FACTORY, "create_launch", { args }, parseNear(f.fee), 300);
       setStatus({ ok: true, text: `Launch ${result} created. Opening it now.` });
@@ -142,20 +182,36 @@ export default function Create() {
             <legend>Split and auction</legend>
             {field("sale", "Sale share (%)")}
             {field("lp", "Pool share (%)", "At most the sale share. It scales with how much actually sells.")}
-            {field("creator", "Creator share (%)", "At most 10%. Locked until the price holds.")}
+            {field("creator", "Creator share (%)", create.creatorHelp)}
             {field("pMin", "Minimum price (NEAR per token)", "If demand is short, every winner pays this price.")}
             {field("commit", "Sealed bidding window (seconds)", undefined, "numeric")}
             {field("reveal", "Reveal window (seconds)", undefined, "numeric")}
             {field("penalty", "Penalty for not revealing (%)", "Paid into the price-defence treasury.")}
           </fieldset>
           <fieldset className="card stack-4">
-            <legend>Floor Keeper and lock</legend>
+            <legend>Floor Keeper and creator lock</legend>
+            <div className="field">
+              <p id={`${fid}-mode-label`} className="field-label">Timings</p>
+              <div className="segmented" role="group" aria-labelledby={`${fid}-mode-label`} aria-describedby={`${fid}-mode-help`}>
+                <button type="button" className={`btn btn-sm ${mode === "production" ? "btn-primary" : "btn-secondary"}`} aria-pressed={mode === "production"} onClick={() => pickMode("production")}>
+                  Production
+                </button>
+                <button type="button" className={`btn btn-sm ${mode === "demo" ? "btn-primary" : "btn-secondary"}`} aria-pressed={mode === "demo"} onClick={() => pickMode("demo")}>
+                  Testnet demo
+                </button>
+              </div>
+              <p id={`${fid}-mode-help`} className="help">
+                {mode === "production" ? create.modeProduction : create.modeDemo}
+              </p>
+            </div>
+            {field("lock", "Creator lock after the auction (seconds)", mode === "production" ? `At least 7 days. Now ${days(Number(f.lock))}.` : "At least 30 seconds.", "numeric")}
+            {field("vest", "Creator vesting after the lock (seconds)", mode === "production" ? `Released in a straight line over this period. At least 7 days. Now ${days(Number(f.vest))}.` : "At least 10 seconds.", "numeric")}
+            {field("poke", "Minimum seconds between price observations", mode === "production" ? "At least 60." : undefined, "numeric")}
+            {field("h", "Intervals above clearing plus 5% before any creator release", mode === "production" ? "Together they must cover at least 7 days." : undefined, "numeric")}
             {field("band", "Buy back below clearing minus (%)")}
-            {field("k", "Intervals below the floor before a buyback", undefined, "numeric")}
+            {field("k", "Intervals below the floor before a buyback", mode === "production" ? "At least 3, covering at least 30 minutes." : undefined, "numeric")}
             {field("r", "Most of the treasury spent per epoch (%)")}
-            {field("epoch", "Epoch length (seconds)", undefined, "numeric")}
-            {field("poke", "Minimum seconds between price observations", undefined, "numeric")}
-            {field("h", "Intervals at or above clearing before creator tokens are released", undefined, "numeric")}
+            {field("epoch", "Epoch length (seconds)", mode === "production" ? "At least 3600." : undefined, "numeric")}
             {field("fee", "NEAR to attach", create.cost)}
           </fieldset>
         </div>

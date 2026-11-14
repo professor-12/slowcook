@@ -7,8 +7,8 @@ export const REPO_URL = "https://github.com/professor-12/slowcook";
 // Public site address (canonical URLs, Open Graph image, sitemap). Override with NEXT_PUBLIC_SITE_URL.
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://web-omega-dun-65.vercel.app").replace(/\/$/, "");
 export const EXPLORER = "https://testnet.nearblocks.io";
-export const FACTORY_ID = "slowcook-0dd752.testnet";
-export const CODE_HASH = "9A6qZZvajAXpEfa7UCrzNuZ1HF1ushD8wb7TdCSiSsEy";
+export const FACTORY_ID = "slowcook-674040.testnet";
+export const CODE_HASH = "ALMDgepz9QLetuxSEcRC5C1QxepEtPrGbZUWSRQYiLWW";
 
 export interface Link {
   label: string;
@@ -28,12 +28,12 @@ export const home = {
     title: "Memecoin launches where being first is worthless.",
     subtitle:
       "Bids stay sealed until bidding closes. Every winner pays one clearing price, unsold supply is burned, and trading opens at that price.",
-    primary: { label: "See a launch", href: "/launch/?id=1" },
+    primary: { label: "See a launch", href: "/launch/?id=0" },
     secondary: { label: "Create a launch", href: "/create/" },
     proof: "Unaudited contracts on NEAR testnet. Test NEAR only.",
   },
   proof: {
-    eyebrow: "Launch 1 on testnet, 12 Nov 2026",
+    eyebrow: "Launch 0 on testnet, 14 Nov 2026",
     title: "What happened on-chain",
     items: [
       { value: "1 price", label: "paid by all 11 winning bids, including one placed 7× higher" },
@@ -83,10 +83,11 @@ export const home = {
         ],
       },
       {
-        title: "The creator waits for the price.",
+        title: "The creator waits for time and price.",
         claims: [
-          "Creator tokens stay locked until the price holds at or above clearing for a set number of intervals in a row.",
-          "On testnet the release was refused right after launch and allowed after the price held for 6 intervals.",
+          "Creator tokens are locked for at least 7 days after the auction, then vest in a straight line over at least 7 more.",
+          "Each release needs the time-weighted price above clearing plus 5% for at least 7 days. A pool nobody trades does not count.",
+          "On testnet, with a 15-minute demo lock, an early release was refused while the price held. After the lock, 61,937 tokens vested part-way through and the other 38,063 at the end.",
         ],
       },
     ],
@@ -107,7 +108,7 @@ export const home = {
       },
       {
         title: "Tests",
-        body: "51 unit tests, 1,000 random auctions per property-test run, 1,000 auctions matched against an independent model, and 4 runs on a local NEAR node.",
+        body: "70 contract tests, including 1,000 random auctions and 1,000 random creator-lock histories per property-test run, 1,000 auctions matched against an independent model, and 4 runs on a local NEAR node.",
         link: { label: "Read the test report", href: `${REPO_URL}/blob/main/verification/test-report.md` },
       },
       {
@@ -149,8 +150,8 @@ export const home = {
   },
   final: {
     title: "See one price set on-chain.",
-    body: "Open launch 1 and check every bid, the clearing price and the buyback against the explorer.",
-    primary: { label: "See launch 1", href: "/launch/?id=1" },
+    body: "Open launch 0 and check every bid, the clearing price, the buyback and the creator lock against the explorer.",
+    primary: { label: "See launch 0", href: "/launch/?id=0" },
     secondary: { label: "Read the code", href: REPO_URL },
     status: "NEAR testnet. Test NEAR only. Contracts unaudited.",
   },
@@ -188,7 +189,7 @@ export const why = {
     "SIMULATED: synthetic agents, 1,000 runs. Bars show the median, whiskers the 5th to 95th percentile. In SlowCook the insiders get the strongest strategy we built: they know all retail demand and bid one tick above the price retail alone would set.",
   fixes: {
     title: "What it fixes",
-    body: "Being first, splitting into 20 wallets, or bidding higher buys no better price. Unsold supply is burned instead of flooding the pool. The creator's tokens are released only after the price holds.",
+    body: "Being first, splitting into 20 wallets, or bidding higher buys no better price. Unsold supply is burned instead of flooding the pool. The creator's tokens stay locked for at least 7 days, then vest, and are released only while the price holds above clearing.",
   },
   limits: {
     title: "What it does not fix",
@@ -199,13 +200,19 @@ export const why = {
 
 export const create = {
   title: "Create a launch",
-  lead: "Set the supply, minimum price and bidding windows. Nothing trades until the auction clears. Your share is capped at 10% and stays locked until the price holds.",
+  lead: "Set the supply, minimum price and bidding windows. Nothing trades until the auction clears. Your share is capped at 10%, locked for at least 7 days, then vests over at least 7 more while the price holds.",
+  creatorHelp: "At most 10%. Locked, then vested, and released only while the price holds above clearing plus 5%.",
+  modeProduction: "The contract's minimums apply: a 7-day lock, a 7-day vest, a 7-day price hold and a keeper that waits at least 30 minutes.",
+  modeDemo: "Short timings for a testnet demo. The contract accepts them only on a testnet factory, and the launch page labels the launch as a demo.",
   cost: "You attach about 2.1 NEAR on testnet: 1.59 NEAR stores the token code, 0.3 NEAR funds token storage, and 0.1 NEAR stores the launch. Anything extra funds token storage.",
   submit: "Create launch",
   connect: "Connect wallet to create",
 };
 
 export const launchCopy = {
+  demoBadge: "Demo timings",
+  demoNote: (lock: string, vest: string, poke: string) =>
+    `Testnet demo timings: a ${lock} creator lock, a ${vest} vest and ${poke} between price observations. Production launches must use at least 7 days, 7 days and 60 s.`,
   phases: ["Sealed bidding", "Reveal", "Finalize", "Trading"],
   takePart: "Take part",
   connectFor: {

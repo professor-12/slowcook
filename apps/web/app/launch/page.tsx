@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Suspense, useCallback, useEffect, useId, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { CircleAlert, CircleCheck, ExternalLink, ShieldCheck, ShieldOff } from "lucide-react";
+import { CircleAlert, CircleCheck, Clock, ExternalLink, ShieldCheck, ShieldOff } from "lucide-react";
 import { Histogram } from "@/components/Histogram";
 import { PhaseBadge } from "@/components/PhaseBadge";
 import { launchCopy } from "@/content/site";
@@ -111,6 +111,11 @@ function Launch() {
         </h1>
         <div className="row">
           <PhaseBadge phase={l.phase} />
+          {l.params.demo && (
+            <span className="badge badge-warn">
+              <Clock size={14} aria-hidden /> {launchCopy.demoBadge}
+            </span>
+          )}
           {deadline && <span className="small">{deadline}</span>}
           <a className="small mono" href={`${EXPLORER}/address/${l.token_id}`} rel="noopener noreferrer">
             {l.token_id} <ExternalLink size={14} aria-hidden style={{ verticalAlign: "-2px" }} />
@@ -521,9 +526,13 @@ function SwapBox({ id, l, pool, bal, accountId, run, call, busy }: { id: string;
   );
 }
 
+const secs = (ms: number | string) => `${Math.round(Number(ms) / 1000)} s`;
+const when = (ms: number) => new Date(ms).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+
 function Treasury({ id, l, tre, run, call, accountId, busy }: { id: string; l: any; tre: any; run: Run; call: Call; accountId: string | null; busy: string | null }) {
   const t = tre.treasury;
   const below = BigInt(tre.spot_price) < BigInt(tre.floor_price);
+  const lockEnd = Number(tre.creator_lock_ends_ms);
   return (
     <section className="card stack-4" aria-labelledby="keeper-title">
       <h2 id="keeper-title" className="card-title">Floor Keeper and creator lock</h2>
@@ -537,6 +546,11 @@ function Treasury({ id, l, tre, run, call, accountId, busy }: { id: string; l: a
               : "Price is at or above the floor. The buyback is not armed."}
         </span>
       </p>
+      {l.params.demo && (
+        <p className="small">
+          {launchCopy.demoNote(secs(l.params.creator_lock_ms), secs(l.params.creator_vest_ms), secs(l.params.poke_interval_ms))}
+        </p>
+      )}
       <dl className="kv">
         <dt>Treasury</dt>
         <dd>{near(t.near_balance)} NEAR</dd>
@@ -553,11 +567,17 @@ function Treasury({ id, l, tre, run, call, accountId, busy }: { id: string; l: a
         <dd>
           {tokens(t.total_bought_back)} tokens for {near(t.total_spent)} NEAR
         </dd>
-        <dt>Creator tokens</dt>
+        <dt>Creator tokens released</dt>
         <dd>
-          {whole(tre.creator_tokens)} {tre.creator_unlocked ? "(released)" : "(locked)"}
+          {whole(tre.creator_released)} of {whole(tre.creator_tokens)}
         </dd>
-        <dt>Intervals at or above clearing</dt>
+        <dt>Creator lock</dt>
+        <dd>{lockEnd > Date.now() ? `Until ${when(lockEnd)}` : `Ended ${when(lockEnd)}`}</dd>
+        <dt>Vested so far</dt>
+        <dd>
+          {whole(tre.creator_vested)}, all by {when(Number(tre.creator_vest_ends_ms))}
+        </dd>
+        <dt>Intervals above {price(tre.hold_price)} NEAR (clearing plus 5%)</dt>
         <dd>
           {t.above_streak} of {l.params.h_obs} needed
         </dd>
@@ -575,7 +595,7 @@ function Treasury({ id, l, tre, run, call, accountId, busy }: { id: string; l: a
       </div>
       <p className="small muted">
         Anyone can call these (contract methods poke, defend and unlock_creator). The contract enforces the rules: time-weighted trigger, at most {l.params.r_bps / 100}% of the
-        treasury per epoch, never above the clearing price.
+        treasury per epoch, never above the clearing price. Creator tokens go only to the creator, only after the lock, only as they vest, and only while the price holds.
       </p>
     </section>
   );

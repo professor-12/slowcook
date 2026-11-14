@@ -2,14 +2,14 @@
 
 [![CI](https://github.com/professor-12/slowcook/actions/workflows/ci.yml/badge.svg)](https://github.com/professor-12/slowcook/actions/workflows/ci.yml)
 
-**Live demo:** https://web-omega-dun-65.vercel.app · **Testnet contract:** `slowcook-0dd752.testnet`
+**Live demo:** https://web-omega-dun-65.vercel.app · **Testnet contract:** `slowcook-674040.testnet` (deployed 2026-11-14 with the creator-lock fix)
 
 SlowCook is a memecoin launchpad on NEAR:
 - **Sealed bids** go into a **single clearing price** that everyone pays.
 - **Unsold supply burns.**
 - Trading opens **at exactly that price**.
 - A rule-bound **Floor Keeper** treasury defends the price.
-- The creator's allocation stays locked until the price holds.
+- The creator's allocation is **locked for at least 7 days**, then **vests linearly over at least 7 more**, and is released only while the price holds **above clearing + 5%**.
 
 Tracks: **Memecoins** (primary) and **DeFi**. Network: **NEAR testnet** (test NEAR, no real value).
 
@@ -35,7 +35,8 @@ Sources and caveats: [`research/00-brief.md`](research/00-brief.md).
               unsold supply never minted (burned) ◀───────────────────────┤
               pool seeded at exactly the clearing price ◀─────────────────┤
               treasury = rest of proceeds ─▶ Floor Keeper (poke → TWAP → defend → burn)
-              creator allocation locked ─▶ unlocks after h intervals at/above clearing
+              creator allocation ─▶ locked ≥ 7 days ─▶ vests linearly ≥ 7 days, released only
+                                    while h interval TWAPs (≥ 7 days) stay ≥ clearing × 1.05
 ```
 
 1. **Create.** The creator sets name, ticker, supply, split (sale/LP/creator, creator ≤ 10%), minimum price, the commit/reveal windows and the Floor Keeper parameters. A NEP-141 token is deployed at `<ticker>-<id>.<factory>` with **zero supply**.
@@ -49,7 +50,33 @@ Sources and caveats: [`research/00-brief.md`](research/00-brief.md).
 6. **After launch.**
    - Part of the proceeds and the LP tokens seed a constant-product pool at the clearing price; that liquidity is locked.
    - The rest funds the **Floor Keeper**. If the *time-weighted* price stays below `clearing − 10%` for k observations, anyone can call `defend()`. It buys tokens back with at most 10% of the treasury per epoch, never pushes the price above clearing, and burns what it buys.
-   - The creator's tokens unlock only after h consecutive observations at or above clearing.
+   - **Creator lock.** Nothing moves before `finalized_at + creator_lock` (at least 7 days). After that the allocation vests linearly over `creator_vest` (at least 7 days), and `unlock_creator` sends only the newly vested part, and only if the last h interval TWAPs were all at or above **clearing × 1.05**. The pool opens exactly at clearing, so an untraded pool never counts as holding. h × poke interval must cover at least 7 days.
+
+### Launch parameters: defaults and protocol minimums
+
+The creator can raise any of these, never lower them below the minimum. `get_config` returns the same table from the contract.
+
+| Parameter | Default | Protocol minimum | What the minimum protects |
+|---|---|---|---|
+| `creator_lock_secs` | 604,800 (7 days) | 604,800 (7 days) | No creator token moves before `finalized_at + lock` |
+| `creator_vest_secs` | 2,592,000 (30 days) | 604,800 (7 days) | The allocation cannot leave in one transfer |
+| `h_obs` × `poke_interval_secs` (price hold) | 1,008 × 600 s = 7 days | 7 days | A short pump cannot satisfy the hold |
+| Hold threshold | clearing × 1.05 | fixed | Readings must be **above** the opening price |
+| `poke_interval_secs` | 600 | 60 | One TWAP interval cannot be a single block |
+| `k_obs` (and `k_obs` × poke) | 6 (1 hour) | 3 (30 minutes) | A brief dip cannot trigger a buyback |
+| `epoch_secs` | 86,400 (1 day) | 3,600 | The `r_bps` cap cannot be reset every few seconds |
+| `r_bps` | 1,000 (10%) | 1 to 5,000 | Treasury spend per epoch |
+| `band_bps` | 1,000 (floor = clearing − 10%) | 100 to 5,000 | |
+
+**Demo timings (testnet only).** A factory initialised with `demo: true` can accept launches with `demo: true` and short timings: lock ≥ 30 s, vest ≥ 10 s, poke ≥ 1 s, epoch ≥ 10 s. The contract refuses `demo: true` at init unless the factory account ends in `.testnet`. Every view returns `params.demo`, and the launch page shows a **Demo timings** badge with the actual lock, vest and poke values. The testnet demos below use demo timings so they finish in minutes.
+
+### Security fix: creator-lock bypass (2026-11-14)
+
+A code review found that the creator lock could be bypassed.
+- **Bug.** `unlock_creator` only needed `h_obs` consecutive interval TWAPs **at or above** clearing. The pool opens **exactly at** clearing, so an untraded pool counted as holding. With no time lock and no minimum on `h_obs` or the poke interval, a creator could set `h_obs = 1`, poke after 1 s, and take the whole allocation about a second after finalize.
+- **Fix.** The rules in the table above: a 7-day minimum lock from finalize, readings at or above clearing × 1.05, a hold of at least 7 days, a linear vest of at least 7 days, and minimums on `k_obs`, epoch and poke interval. Demo timings exist only on a `.testnet` factory and are labelled per launch.
+- **Tests first.** `contracts/slowcook/src/creator_lock_tests.rs` was committed before the fix. On the old rules 9 of its unit tests and its property test failed; the property test's minimal case paid the creator 5 hours after finalize with a 0-day lock ([`verification/creator-lock-red.txt`](verification/creator-lock-red.txt)). They all pass on the fix.
+- **Affected deployments.** Launches 0 and 1 on the first factory, `slowcook-0dd752.testnet`, ran the old rule (their creator was our own demo account). The fixed contract runs on a fresh factory, `slowcook-674040.testnet`. The auction, pool and buyback code did not change; the only auction change is recording `finalized_ms`.
 
 Mechanism details and every deviation from the original brief: [`research/03-design-decisions.md`](research/03-design-decisions.md). Contract internals: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
@@ -77,32 +104,39 @@ Honest reading:
 
 ### REAL: NEAR testnet
 
-Factory: **`slowcook-0dd752.testnet`**. Its on-chain code hash `9A6qZZvajAXpEfa7UCrzNuZ1HF1ushD8wb7TdCSiSsEy` equals this repo's build.
+Factory: **`slowcook-674040.testnet`**, deployed 2026-11-14 with the creator-lock fix. Its on-chain code hash `ALMDgepz9QLetuxSEcRC5C1QxepEtPrGbZUWSRQYiLWW` equals this repo's build (`target/near/slowcook/slowcook.wasm`, RPC `view_account`). `get_config` on it returns the minimums in the table above and `demo_allowed: true`.
 
-#### Launch 1: deep pool (`deep-1.slowcook-0dd752.testnet`, 2026-11-12)
+#### Launch 0: deep pool, fixed contract (`deep-0.slowcook-674040.testnet`, 2026-11-14)
 
-12 wallets with 1.3 NEAR of buying power each.
+12 wallets with 1.3 NEAR of buying power each. **Demo timings**, labelled on the launch page: 15-minute creator lock, 3-minute vest, 10 s pokes, hold of 6 intervals.
 
 **Prediction.** Before anything was sent, the TS model (the parity-tested mirror of the contract math) predicted the clearing price, tokens sold and pool depth. **The on-chain result matched all three exactly**: `onchain_matches_prediction` in the log.
 
 | Step | Result | Tx |
 |---|---|---|
-| 12 wallets commit sealed bids | Only hashes and deposits are on-chain; the bid view shows `tick=null qty=null` | [create_launch](https://testnet.nearblocks.io/txns/GN3STC17XBWJFXiGmpfoq1HWQtfwFcy1NmHzAWcS9fGs) · [a commit](https://testnet.nearblocks.io/txns/8qS9zG6ibYxFNr8muTHFx6VBULYjBxBujRC31rscsLs2) |
-| Reveal with a wrong salt | Rejected `E_HASH` | [tx](https://testnet.nearblocks.io/txns/EtCZhXJW4A8HDhZ5xYn8Uw2No8RZuv3bYeyDAys5qrgF) |
-| `finalize` | **One clearing price: 1.953e-5 NEAR/token** (tick 6). All 600,000 sale tokens sold, 0 burned. **The pool opens at exactly that price with 5.858 NEAR + 300,000 tokens.** Treasury 5.93 NEAR | [tx](https://testnet.nearblocks.io/txns/so2LEkqWAMjBxJwyFYuXQsUjLtAEFppxfqgKLVyCKCT) |
-| The "sniper" (bid ~7× above clearing) claims | Paid exactly clearing × 9,409 = 0.1837 NEAR, **the same price per token as everyone**; the rest of the deposit refunded | [tx](https://testnet.nearblocks.io/txns/GSMddvWnuJjV5M7hwjWLUa3Ckg5bjn5LHz5Q5pth1ps9) |
-| Unrevealed bid | 0.0715 NEAR (5%) penalty → treasury | [tx](https://testnet.nearblocks.io/txns/8uU6DuB91Gq1djY8GNPCetTkrRc4v8TPDnEi2dSkBWzg) |
-| Creator unlock right after launch | `E_LOCKED` | [tx](https://testnet.nearblocks.io/txns/3AUwtZ8vChDJ4KTr1H9Q7zC4DsU5D4Zb63atzPZw3xJN) |
-| 6 holders dump 308,480 tokens: spot falls to 24% of clearing. Then `defend` before the trigger | `E_TRIGGER` | [tx](https://testnet.nearblocks.io/txns/DtdN6JUAgpW8p47AqbgArCrNL283DeKHDEkZ6k3q5fiG) |
-| 3 TWAP intervals below the floor → `defend` | Spent **0.5929 NEAR = exactly the 10% epoch cap**. Bought and **burned 103,215 tokens**; supply 1,000,000 → 896,784 | [tx](https://testnet.nearblocks.io/txns/CaWtxdoqnjjLRqHXHSYJpwQvEPxHNv8f2BWU8pRLXLmh) |
-| `defend` again in the same epoch | `E_EPOCH_CAP` | [tx](https://testnet.nearblocks.io/txns/D3KCfRbkMJECbjdWqwa4Bjk5fzdXGKwsk4xFDuqYjPcX) |
-| A 2.69 NEAR buy lifts spot to 1.11× clearing; it holds for 6 intervals → `unlock_creator` | Creator receives 100,000 tokens | [buy](https://testnet.nearblocks.io/txns/DfCA1VXMZWbUCFGdAoHFpazXd3AGedHAvjmYFb5npd8o) · [unlock](https://testnet.nearblocks.io/txns/FnVVh9KXAxgDzSw553H9wQTdP15eQjTTMFT7nWY7za6H) |
+| 12 wallets commit sealed bids | Only hashes and deposits are on-chain; the bid view shows `tick=null qty=null` | [create_launch](https://testnet.nearblocks.io/txns/DtVKSgpgSALUQJCg64mWAXRq9EtBk5vUufF8WfEn8g5o) · [a commit](https://testnet.nearblocks.io/txns/2wLspUMft8hBzqhHQUERzMzny5duWXxy6hzc8F6yZTX2) |
+| Reveal with a wrong salt | Rejected `E_HASH` | [tx](https://testnet.nearblocks.io/txns/AkesCVnE4yYs47fiqbsT6RdzLZvcoee3gouHU2pzPZJ6) |
+| `finalize` | **One clearing price: 1.953e-5 NEAR/token** (tick 6). All 600,000 sale tokens sold, 0 burned. **The pool opens at exactly that price with 5.858 NEAR + 300,000 tokens.** Treasury 5.93 NEAR | [tx](https://testnet.nearblocks.io/txns/9rRsEJcQNgcas1VndVUGNoVtXcg8GvEKdjLiPWj4g2fr) |
+| The "sniper" (bid ~7× above clearing) claims | Paid exactly clearing × 9,409 = 0.1837 NEAR, **the same price per token as everyone**; the rest of the deposit refunded | [tx](https://testnet.nearblocks.io/txns/EevwMKM6sBDUngKQD6YcGJTMpKBg18xWDnP7JDVGe1GT) |
+| Unrevealed bid | 0.0715 NEAR (5%) penalty → treasury | [tx](https://testnet.nearblocks.io/txns/2Ns2NBoQ4ud26SoYqLSsxEgzTPr1oYMhtbHJAgUMd78j) |
+| Creator unlock right after launch | `E_LOCKED` | [tx](https://testnet.nearblocks.io/txns/DsW44QYxDBmU49cXkxXCvSRBrNTuytW1SQsiP7dZzkKk) |
+| 6 holders dump 308,480 tokens: spot falls to 24% of clearing. Then `defend` before the trigger | `E_TRIGGER` | [tx](https://testnet.nearblocks.io/txns/C86aaWDetFEoA5GPWQoW58rMSCA1Pc3VQF8zA8sttkur) |
+| 3 TWAP intervals below the floor → `defend` | Spent **0.5929 NEAR = exactly the 10% epoch cap**. Bought and **burned 103,215 tokens**; supply 1,000,000 → 896,784 | [tx](https://testnet.nearblocks.io/txns/E29i7jvS7YGLW4twXPEPjrtgUEU6zKq1BisE4YhTfZas) |
+| `defend` again in the same epoch | `E_EPOCH_CAP` | [tx](https://testnet.nearblocks.io/txns/3oirdDs8iuzHddc3PEdGzq46uv1ugZFaBJC2m8BhCCsc) |
+| A 2.83 NEAR buy lifts spot to 1.16× clearing. The first interval TWAP (1.79e-5, it includes pre-buy time) is below the 2.05e-5 hold price and does not count; the next 6 do | Hold met: 6 of 6 intervals | [buy](https://testnet.nearblocks.io/txns/GTE2FKGxGc3jb2Jj8Et19Rp7eRmJeYvrnrmYdWdJ5NVQ) |
+| **(a)** `unlock_creator` with the price held but the lock running | **`E_LOCKED: creator lock ends at 1794621922793 ms (525 s left)`** | [tx](https://testnet.nearblocks.io/txns/DARXW1JeJ7uPo83DAPiJ4VQVP5gb3VPVvAvxABQXzmKg) |
+| **(b)** `unlock_creator` part-way through the 3-minute vest | **61,937** of 100,000 tokens: only what had vested | [tx](https://testnet.nearblocks.io/txns/4sPCkd6jZGjuvfoKHCLJsurpM9RZzsoYvk55kpAccEky) |
+| `unlock_creator` after the vest | The other **38,063**. Creator balance = 100,000 = the allocation | [tx](https://testnet.nearblocks.io/txns/3qkrio5WFX1Z19cfRWihUYzwAALyHjjbcPDkQDS6RBuw) |
 
-Logs with every transaction: [`results/launch-1-*.json`](results/), [`results/dump-1-*.json`](results/).
+Logs with every transaction: [`results/launch-0-2026-11-14T01-51-38-296Z.json`](results/launch-0-2026-11-14T01-51-38-296Z.json), [`results/dump-0-2026-11-14T02-08-47-558Z.json`](results/dump-0-2026-11-14T02-08-47-558Z.json). After the run, `get_solvency` reports `solvent: true`.
 
-<details><summary>Launch 0: first run, thin pool (~0.7 NEAR), 2026-11-09</summary>
+<details><summary>Earlier runs on the first factory, <code>slowcook-0dd752.testnet</code> (pre-fix creator lock), 2026-11-09 and 2026-11-12</summary>
 
-Launch 0 token: `slow-0.slowcook-0dd752.testnet`.
+**These two launches ran the old creator-lock rule** (no time lock; hold counted at or above clearing; see "Security fix" above). Their auction, pool and buyback results are still valid evidence, because that code did not change. Their creator-unlock rows show the old behaviour, which is what the fix removes.
+
+**Launch 1, deep pool** (`deep-1.slowcook-0dd752.testnet`, 2026-11-12). Same plan as launch 0 above, with the same results: clearing 1.953e-5 NEAR/token, 600,000 sold, a 5.858 NEAR pool, `defend` spent 0.5929 NEAR and burned 103,215 tokens, then `E_EPOCH_CAP`. Under the old rule the creator received all 100,000 tokens within about 5 minutes of finalize, once the price held at or above clearing for 6 × 10 s intervals ([unlock tx](https://testnet.nearblocks.io/txns/FnVVh9KXAxgDzSw553H9wQTdP15eQjTTMFT7nWY7za6H)). Logs: [`results/launch-1-2026-11-12T07-16-28-408Z.json`](results/launch-1-2026-11-12T07-16-28-408Z.json), [`results/dump-1-2026-11-12T07-21-36-824Z.json`](results/dump-1-2026-11-12T07-21-36-824Z.json).
+
+**Launch 0, thin pool** (`slow-0.slowcook-0dd752.testnet`, 2026-11-09, ~0.7 NEAR pool).
 
 | Step | Result | Tx |
 |---|---|---|
@@ -118,24 +152,24 @@ Launch 0 token: `slow-0.slowcook-0dd752.testnet`.
 | `defend` again, same epoch | `E_EPOCH_CAP` | [tx](https://testnet.nearblocks.io/txns/exkZu2KgAushWQcfDVpp24SGsKVw5CWxWEjxAuCG45N) |
 | Price recovers and holds 6+ intervals → `unlock_creator` | Creator receives 99,999 tokens | [tx](https://testnet.nearblocks.io/txns/C7GCT6rJGsBz3AnGJNoF9fWfsRY4zKSqy74zPiAxerPk) |
 
-Logs: [`results/launch-0-*.json`](results/), [`results/dump-0-*.json`](results/). Launch 0 ran on the build just before a lint-only refactor; the factory was then redeployed with this repo's build ([`verification/test-report.md`](verification/test-report.md) §3).
+Logs: [`results/launch-0-2026-11-09T17-25-20-089Z.json`](results/launch-0-2026-11-09T17-25-20-089Z.json), [`results/dump-0-2026-11-09T17-30-11-731Z.json`](results/dump-0-2026-11-09T17-30-11-731Z.json). Launch 0 ran on the build just before a lint-only refactor; the factory was then redeployed with this repo's build ([`verification/test-report.md`](verification/test-report.md) §3).
 </details>
 
 **Caveats**
 - Every wallet, the keeper and the buyer were script-controlled.
-- Two launches are not a market.
+- Three scripted launches are not a market.
 - With the default split, the pool holds LP tokens equal to half the tokens sold. So dumping a given share of the sold supply moves the price by about the same proportion in any launch.
-- The pool's NEAR depth sets how much NEAR it takes to move the price back. Launch 1 needed 2.69 NEAR to reach 1.11× clearing; on launch 0's thin pool, 2 NEAR overshot to about 11×.
+- The pool's NEAR depth sets how much NEAR it takes to move the price back. On the 5.86 NEAR pools, 2.69 NEAR lifted the price to 1.11× clearing and 2.83 NEAR to 1.16×; on the first factory's thin pool, 2 NEAR overshot to about 11×.
 
 ### Tests: every rule is a contract function with a test
 
 | Suite | What it proves | Command |
 |---|---|---|
-| 51 contract unit tests (54 incl. property + parity) | Every error code (`E_PHASE E_HASH E_DEPOSIT E_DUP E_CAP E_NOT_FINAL E_SLIPPAGE E_TRIGGER E_EPOCH_CAP E_LOCKED E_AUTH E_PARAMS E_NO_BID E_TOO_SOON E_NOT_FOUND`), tick walking, pro-rata rounding, penalty, burn, pool math, TWAP trigger, epoch cap, creator lock, failed-callback recovery | `cargo test -p slowcook` |
-| Property tests (1000 random auctions) | I1 supply/burn, I2 `paid + refund + penalty = deposit`, I3 solvency, I6 bad or duplicate reveals always rejected, plus an independent brute-force clearing oracle | `PROPTEST_CASES=1000 cargo test -p slowcook proptests` |
+| **70 contract tests**: 66 in `slowcook` (62 unit, 2 property, 2 parity) and 4 in the token. Counted by `cargo test -- --list` | Every error code (`E_PHASE E_HASH E_DEPOSIT E_DUP E_CAP E_NOT_FINAL E_SLIPPAGE E_TRIGGER E_EPOCH_CAP E_LOCKED E_AUTH E_PARAMS E_NO_BID E_TOO_SOON E_NOT_FOUND`), tick walking, pro-rata rounding, penalty, burn, pool math, TWAP trigger, epoch cap, failed-callback recovery, and 11 creator-lock unit tests (minimums, 7-day lock, price margin, linear vest, demo gating) | `cargo test -p slowcook -p slowcook-token` |
+| Property tests (1000 cases each) | Random auctions: I1 supply/burn, I2 `paid + refund + penalty = deposit`, I3 solvency, I6 bad or duplicate reveals always rejected, plus an independent brute-force clearing oracle. Random creator-lock histories: no creator token before `finalized_at + 7 days`, never more than vested | `PROPTEST_CASES=1000 cargo test -p slowcook -- proptests creator_never_paid` |
 | Parity (1000 + 100 auctions) | The TS model and the contract agree exactly on clearing, fills, payments, refunds and commit hashes. 1000 cases through the contract math and 100 through the full contract flow | `pnpm parity && cargo test -p slowcook parity` |
 | Token unit tests | Zero supply at start, owner-only mint, burn, auto-registration | `cargo test -p slowcook-token` |
-| Sandbox integration (real wasm, real runtime) | A 30-bidder launch; the undersubscribed burn path; dump → defend fires once → the epoch cap blocks it; creator unlock blocked then allowed; on-chain solvency; embedded vs global token deploy costs | `pnpm test:sandbox` |
+| Sandbox integration (4 tests, real wasm, real runtime) | A 30-bidder launch; the undersubscribed burn path; dump → defend fires once → the epoch cap blocks it; creator release refused during the lock, partial mid-vest, the rest after; on-chain solvency; embedded vs global token deploy costs | `pnpm test:sandbox` |
 | Simulator tests | Clearing vectors, determinism, the insider-share result | `node --test sim/test/*.test.ts` |
 
 Results with numbers and limits: [`verification/test-report.md`](verification/test-report.md).
@@ -159,9 +193,9 @@ Live testnet run, using your own faucet accounts in `.env` (see `.env.example`):
 
 ```bash
 near account create-account sponsor-by-faucet-service <name>.testnet autogenerate-new-keypair save-to-legacy-keychain network-config testnet create
-node scripts/deploy-testnet.ts   # → deploys factory, uploads token code
+node scripts/deploy-testnet.ts   # → deploys factory (demo timings allowed on .testnet), uploads token code
 pnpm demo:launch                 # → 12 wallets bid sealed, reveal, finalize: prints the single clearing price and burned supply
-pnpm demo:dump <launch_id>       # → dump, poke, defend() buys back and burns, epoch cap blocks a second defend, creator unlocks after recovery
+pnpm demo:dump <launch_id>       # → dump, poke, defend() buys back and burns, epoch cap blocks a second defend; creator release refused during the lock, then paid as it vests
 ```
 
 Web app (static Next.js; connect a testnet wallet through near-connect):
@@ -215,7 +249,7 @@ The clearing walk (Gnosis Auction) and tick books (CCA) are established. SlowCoo
 - **The Floor Keeper slows a sell-off; it can't stop one.**
   - It needs someone to `poke`. That is permissionless, and the demo uses a script.
   - A patient attacker who really holds the price down can extract at most r% of the treasury per epoch.
-- **A creator with enough capital** can hold the price up for h intervals to unlock. Production should set h to days.
+- **A creator with enough capital** can hold the price 5% above clearing for the 7-day hold window and then receive the vested part. The lock and vest bound how fast that can happen; they do not make it impossible.
 - **The creator receives no NEAR from the sale.** Proceeds go to the locked LP and the treasury.
 - **Owner power** is limited to choosing the token code for *new* launches. The owner has no access to escrow, the pool or the treasury.
 - **Testnet and test NEAR only.** This is not an offering of real tokens, and the code is **unaudited**.

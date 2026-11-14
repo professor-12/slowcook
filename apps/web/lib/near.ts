@@ -1,7 +1,7 @@
 // Read-only NEAR helpers: JSON-RPC view calls, formatting and the commit hash (same preimage as
 // contracts/slowcook/src/math.rs::commit_preimage).
 export const NETWORK = "testnet" as const;
-export const FACTORY = process.env.NEXT_PUBLIC_SLOWCOOK_FACTORY ?? "slowcook-0dd752.testnet";
+export const FACTORY = process.env.NEXT_PUBLIC_SLOWCOOK_FACTORY ?? "slowcook-674040.testnet";
 export const RPC = process.env.NEXT_PUBLIC_NEAR_RPC ?? "https://rpc.testnet.fastnear.com";
 export const EXPLORER = "https://testnet.nearblocks.io";
 export const ONE_TOKEN = 10n ** 18n;

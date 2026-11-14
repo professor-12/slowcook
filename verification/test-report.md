@@ -1,31 +1,36 @@
 # Test report (real results only)
 
 - **Machine:** WSL2, 4 cores, 8 GB RAM, Rust 1.97.0, Node 24.17.0.
-- **Date:** 2026-11-09.
+- **Date:** 2026-11-09, with sections 1 to 3 re-run on 2026-11-14 after the creator-lock fix.
 - **Rule:** every number below comes from a run whose output is quoted here or saved in `results/`. Nothing is estimated.
 
 ## 1. Contract unit, property and parity tests
 
+Latest run: 2026-11-14, after the creator-lock fix (commit `5ad4575`).
+
 Command:
 ```bash
-node sim/src/parity.ts --cases 1000 && PROPTEST_CASES=1000 cargo test -p slowcook -p slowcook-token -j 2
+PROPTEST_CASES=1000 bash scripts/test-all.sh
 ```
 
-Output:
+Output (filtered by the script to result lines):
 ```
-wrote 1000 parity cases { Over: 912, Under: 88 }
-running 54 tests
-test result: ok. 54 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 217.92s
-running 4 tests
-test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+# tests 8
+# pass 8
+# fail 0
+test result: ok. 66 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 391.23s
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+ALL CONTRACT TESTS PASSED
 ```
 
-**`slowcook` (54 tests)** breaks down as:
-- **51 unit tests**: 6 for `math.rs` and 45 for contract flows.
-- **1 property test** over **1000 random auctions**.
-- **2 parity tests**: 1000 cases through the pure math, and 100 cases through the full contract flow in the mocked VM.
+**70 contract tests in total: 66 in `slowcook` and 4 in `slowcook-token`.** The `slowcook` count comes from `cargo test --lib -- --list`:
+- **62 unit tests**: 6 for `math.rs`, 45 for contract flows (`tests.rs`) and 11 for the creator lock (`creator_lock_tests.rs`).
+- **2 property tests**, 1,000 cases each with `PROPTEST_CASES=1000`:
+  - `random_auctions_hold_invariants`: random auctions, invariants I1 to I6;
+  - `creator_never_paid_before_min_lock`: random launch timings and random histories of pumps, dumps, pokes and unlock attempts. No creator token moves before `finalized_at + lock`, the lock is never under 7 days, and the amount released never exceeds the amount vested.
+- **2 parity tests**: 1,000 cases through the pure math, and 100 cases through the full contract flow in the mocked VM.
 
-**`slowcook-token`** has 4 unit tests.
+**Failing tests first.** The creator-lock tests were committed before the fix (`1c83075`). On the old rules, 9 unit tests and the property test failed. The output is in [`creator-lock-red.txt`](creator-lock-red.txt).
 
 **Coverage by rule**
 
@@ -39,13 +44,16 @@ test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 | I5 (defend ≤ r% per epoch, only on trigger) | `dump_triggers_capped_defend_then_epoch_cap_then_next_epoch`, `defend_requires_trigger`, sandbox, testnet |
 | I6 (a bad reveal is always rejected; at most one reveal) | `reveal_mismatch_rejected_and_bid_stays_sealed`, `reveal_twice_rejected`, property |
 | TWAP resists one-block manipulation | `twap_ignores_a_one_block_dip` |
-| Failure callbacks | `failed_token_deploy_marks_launch_failed`, `failed_mint_reopens_finalize`, `failed_token_transfer_on_claim_can_be_retried`, `failed_buy_transfer_is_reversed` |
+| Failure callbacks | `failed_token_deploy_marks_launch_failed`, `failed_mint_reopens_finalize`, `failed_token_transfer_on_claim_can_be_retried`, `failed_buy_transfer_is_reversed`, `failed_creator_transfer_returns_only_that_amount` |
+| Creator lock (7-day minimum lock, hold at clearing × 1.05 for ≥ 7 days, linear vest ≥ 7 days, demo only on `.testnet`) | `creator_cannot_unlock_before_the_lock_even_if_price_holds`, `production_rejects_h1_with_1s_poke`, `production_rejects_values_below_each_minimum`, `production_defaults_meet_the_minimums`, `pool_resting_at_clearing_is_not_holding`, `production_unlock_after_lock_vests_with_sustained_price`, `demo_unlock_vests_linearly_after_the_lock`, `release_blocked_while_price_below_margin`, `demo_timings_need_a_testnet_factory`, `demo_launches_still_need_a_lock_and_a_vest`, property `creator_never_paid_before_min_lock`, sandbox |
 
 **What these tests do not prove**
 - They run on the near-sdk mocked VM, natively. Gas and the real async receipt ordering are covered only by the sandbox and testnet runs below.
 - The property tests draw up to 23 bidders per auction. The 500-commit cap is not stress-tested.
 
 ## 2. Sandbox integration (real wasm, near-sandbox 2.14.0)
+
+Latest run: 2026-11-14, on the fixed contract. The factory now lives at `factory.testnet` (a `testnet` top-level account created by the sandbox registrar), because demo timings are accepted only on a `.testnet` factory.
 
 Command:
 ```bash
@@ -55,24 +63,66 @@ pnpm build:contracts && cargo test -p slowcook-integration-tests -- --nocapture 
 Output:
 ```
 test dump_defend_epoch_cap_and_creator_unlock ... defend: spent 121366732071237304680000 yocto, burned 99625094101755740488560 base units
-test full_launch_30_bidders ... finalize gas burnt: 7.05 Tgas
-solvency after 30-bidder launch: {"balance":"502887729011410133507399985","owed":"2791434837638458007400000","solvent":true,"storage_locked":"4680890000000000000000000"}
-test measure_token_deploy_costs ... embedded: creator paid 3.9580 NEAR, token account storage 159011 bytes, balance 2.9000 NEAR
+creator: locked, then 36133 mid-vest, then 63867 more
+test full_launch_30_bidders ... finalize gas burnt: 7.08 Tgas
+solvency after 30-bidder launch: {"balance":"502887677516642700407399985","owed":"2791434837638458007400000","solvent":true,"storage_locked":"4749480000000000000000000"}
+test measure_token_deploy_costs ... embedded: creator paid 3.9580 NEAR, token account storage 159007 bytes, balance 2.9000 NEAR
 global publish cost (one-off): 16.8468 NEAR
-global: creator paid 1.9764 NEAR, token account storage 389 bytes
+global: creator paid 1.9764 NEAR, token account storage 385 bytes
 test undersubscribed_burn_path ... ok
-test result: ok. 4 passed; 0 failed; ... finished in 161.58s
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 261.39s
 ```
 
+**Creator lock on real wasm** (`dump_defend_epoch_cap_and_creator_unlock`, 90 s demo lock, 30 s vest, 100,000 creator tokens):
+1. `unlock_creator` right after finalize: `E_LOCKED`.
+2. After the price held above clearing × 1.05 for 3+ intervals, but before the lock ended: `E_LOCKED` ("creator lock ends at …").
+3. 10 s into the 30 s vest: 36,133 tokens released (one third, plus the block time that passed).
+4. After the vest: the other 63,867. The creator's token balance equals the allocation exactly.
+
 **Readings**
-- **Finalize gas.** Finalize for 30 bidders burns **7.05 Tgas**, far below the 300 Tgas limit.
+- **Finalize gas.** Finalize for 30 bidders burns **7.08 Tgas** (7.05 before the fix), far below the 300 Tgas limit.
 - **Token deploy mode.**
-  - With **embedded** code, each token account stores **159,011 bytes**, about 1.59 NEAR staked.
-  - With a **global** contract, it stores **389 bytes**. The global publish cost **16.85 NEAR once**: the documented 10 NEAR per 100 KB on 158,654 bytes, plus gas.
+  - With **embedded** code, each token account stores **159,007 bytes**, about 1.59 NEAR staked.
+  - With a **global** contract, it stores **385 bytes**. The global publish cost **16.85 NEAR once**: the documented 10 NEAR per 100 KB on 158,654 bytes, plus gas.
 - **Unexplained cost.** In both modes, "creator paid" is about 0.96 NEAR above the attached deposit (3 NEAR and 1 NEAR respectively). The test attaches `max_gas()` (300 Tgas), so this is most likely the prepaid-gas reservation at the sandbox's gas price. **Not investigated further.**
   - On testnet, the creator's real cost for launch 0 was the 2.1 NEAR deposit plus gas. Compare `sc-creator-b44c88.testnet`'s balance history.
 
 ## 3. NEAR testnet (REAL, test NEAR)
+
+### Fixed contract: `slowcook-674040.testnet` (2026-11-14)
+
+- **Account:** a fresh faucet account. Deploy [FWrt4Yv7…](https://testnet.nearblocks.io/txns/FWrt4Yv7AdWGPF4tVyhzVZ1cnc88tWSsofpGhhStdmzP), init with `demo: true` [2HAjMs9y…](https://testnet.nearblocks.io/txns/2HAjMs9yBfrG6dRZiFdqTQoiUZ9devxGg3SBsnAe7xRJ), token code [GL2cxBTT…](https://testnet.nearblocks.io/txns/GL2cxBTTYH99WdgTQz7NU3xbq454VkQZq9n3PWeahLfD). Log: `results/deploy-2026-11-14T01-45-57-911Z.json`.
+- **Code hash:** on-chain `code_hash` = `ALMDgepz9QLetuxSEcRC5C1QxepEtPrGbZUWSRQYiLWW` = base58 sha256 of `target/near/slowcook/slowcook.wasm` built from commit `5ad4575` (313,011 bytes). Checked with RPC `view_account`.
+- **`get_config`** returned `demo_allowed: true`, margin 500 bps, minimums lock/vest/hold 604,800 s, poke 60 s, `k_obs` 3, trigger 1,800 s, epoch 3,600 s.
+- **Funding:** two new faucet accounts (`sc-fund3-7d4893`, `sc-fund4-f17a58`) sent 17.4 NEAR to the funder and 2.5 NEAR to the creator.
+
+**Launch 0** (`results/launch-0-2026-11-14T01-51-38-296Z.json`), same plan as launch 1 on the first factory, with demo timings (`demo: true`, lock 900 s, vest 180 s, poke 10 s, `h_obs` 6, `k_obs` 3, epoch 120 s):
+- Predicted by the TS model before sending, and matched on-chain exactly: clearing 19,526,549,953,584,173,415 yocto/token (tick 6), 600,000 filled, pool 5.8580 NEAR.
+- 11 reveals, 1 deliberate non-reveal (0.0715 NEAR penalty), wrong-salt reveal rejected `E_HASH`. The sniper (tick 20) paid 0.1837 NEAR for 9,409 tokens, the clearing price.
+
+**Dump, Floor Keeper and creator lock** (`results/dump-0-2026-11-14T02-08-47-558Z.json`):
+
+| Step | Result | Tx |
+|---|---|---|
+| `unlock_creator` right after finalize | `E_LOCKED` | [DsW44QYx…](https://testnet.nearblocks.io/txns/DsW44QYxDBmU49cXkxXCvSRBrNTuytW1SQsiP7dZzkKk) |
+| 6 holders dump 308,480 tokens | spot 4.756e-6 vs floor 1.757e-5 | |
+| `defend` before trigger | `E_TRIGGER` | [C86aaWDe…](https://testnet.nearblocks.io/txns/C86aaWDetFEoA5GPWQoW58rMSCA1Pc3VQF8zA8sttkur) |
+| 3 intervals below floor → `defend` | spent 0.592946 NEAR (10% of 5.9295), burned 103,215 tokens | [E29i7jvS…](https://testnet.nearblocks.io/txns/E29i7jvS7YGLW4twXPEPjrtgUEU6zKq1BisE4YhTfZas) |
+| `defend` again, same epoch | `E_EPOCH_CAP` | [3oirdDs8…](https://testnet.nearblocks.io/txns/3oirdDs8iuzHddc3PEdGzq46uv1ugZFaBJC2m8BhCCsc) |
+| 2.831 NEAR buy | spot 2.2626e-5 = 1.159× clearing; hold price 2.0503e-5 | [GTE2FKGx…](https://testnet.nearblocks.io/txns/GTE2FKGxGc3jb2Jj8Et19Rp7eRmJeYvrnrmYdWdJ5NVQ) |
+| 7 pokes | 1st TWAP 1.787e-5 (< hold, streak 0), then 6 at 2.2626e-5 (streak 6 = `h_obs`) | |
+| `unlock_creator`, price held, lock running | `E_LOCKED: creator lock ends at 1794621922793 ms (525 s left)` | [DARXW1Je…](https://testnet.nearblocks.io/txns/DARXW1JeJ7uPo83DAPiJ4VQVP5gb3VPVvAvxABQXzmKg) |
+| `unlock_creator` after lock + 90 s and one more poke | released 61,937 of 100,000 | [4sPCkd6j…](https://testnet.nearblocks.io/txns/4sPCkd6jZGjuvfoKHCLJsurpM9RZzsoYvk55kpAccEky) |
+| `unlock_creator` after the vest | released 38,063; creator balance 100,000 | [3qkrio5W…](https://testnet.nearblocks.io/txns/3qkrio5WFX1Z19cfRWihUYzwAALyHjjbcPDkQDS6RBuw) |
+
+`get_solvency` after the run: `solvent: true` (balance 21.75 NEAR, owed 11.65 NEAR, storage 4.75 NEAR).
+
+**What this does not show:** production timings. A 7-day lock and vest cannot be shown live in a hackathon; they are covered by `production_unlock_after_lock_vests_with_sustained_price` and the property test on the mocked VM.
+
+### First factory: `slowcook-0dd752.testnet` (2026-11-09 to 2026-11-12, pre-fix creator lock)
+
+The runs below used the old creator-lock rule (no time lock; streak counted at or above clearing). Their auction, pool and buyback results remain valid; their creator-unlock steps show the behaviour the fix removed.
+
 
 - **Factory:** `slowcook-0dd752.testnet`.
   - Deploy: [FH1qe61C…](https://testnet.nearblocks.io/txns/FH1qe61Cj89NWQsSYtsGjgwgd8jEBpEGTp3T5SN5BHSB).
@@ -190,6 +240,7 @@ DEMO_BUDGET_NEAR=1.3 DEMO_TICKS=6,7,8 DEMO_OVERDEPOSIT_PCT=10 DEMO_MIN_POOL_NEAR
 - **GitHub Actions CI** (`.github/workflows/ci.yml`), first run on 2026-11-12 at commit `7cde628`: **all steps passed**. [Run 43504634515](https://github.com/professor-12/slowcook/actions/runs/43504634515) (branch push); the tag push run 43504637214 also passed.
   - `contracts` job, 16 min: fmt, clippy `-D warnings`, parity fixtures, unit + property (1000 cases) + parity tests, wasm build, sandbox integration tests.
   - `web-and-sim` job, 24 s: frozen pnpm install, simulator tests, simulator smoke run, web typecheck and build.
+- **CI on the creator-lock fix**, commit `5ad4575` (2026-11-14): [run 43542452926](https://github.com/professor-12/slowcook/actions/runs/43542452926), both jobs `success`, including the 1,000-case property tests and the 4 sandbox tests with the new `factory.testnet` setup. The failing-tests commit `1c83075` was pushed together with it, so CI ran only on the fix.
 
 ## 6. Web app
 

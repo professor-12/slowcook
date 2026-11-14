@@ -1,0 +1,22 @@
+$ pnpm demo:dump 0     # continued: creator lock (demo timings: 15 min lock, 3 min vest)
+== 5. price recovers; creator unlock after it holds
+✔ buyer swaps 2.8310 NEAR for tokens (sized to lift spot ~15% above clearing)
+    spot now 22625661914926157855 (clearing 19526549953584173415, hold needs >= 20502877451263382085)
+✔ poke 1/7 (recovery)
+    twap 17874880888595817456 vs floor 17573894958225756073 | below 0 above 0
+✔ poke 2/7 (recovery)
+    twap 22625661914926157855 vs floor 17573894958225756073 | below 0 above 1
+   […] pokes 3 to 6
+✔ poke 7/7 (recovery)
+    twap 22625661914926157855 vs floor 17573894958225756073 | below 0 above 6
+== 6. price has held (6 of 6 intervals); lock ends 2026-11-14T02:05:22.793Z, vest ends 2026-11-14T02:08:22.793Z
+✘ unlock_creator while the lock runs (expect E_LOCKED)  -> E_LOCKED
+   […] from the result file: "E_LOCKED: creator lock ends at 1794621922793 ms (525 s left)"
+== 7. mid-vest release, then the rest
+✔ poke 1/1 (still holding)
+✔ unlock_creator mid-vest (expect a partial release)
+    released 61937 tokens
+✔ poke 1/1 (still holding)
+✔ unlock_creator after the vest (expect the rest)
+    released 38063 tokens
+    creator token balance: 100000 of allocation 100000
